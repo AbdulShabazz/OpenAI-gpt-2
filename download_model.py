@@ -3,7 +3,7 @@ import os
 import sys
 
 def install(package):
-    subprocess.check_call([sys.executable, "pip", "-m", "install", package])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package]) # python -m pip install [package]
 
 #try:
 #   import torch as pytorch
