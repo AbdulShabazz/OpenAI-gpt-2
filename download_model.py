@@ -1,8 +1,27 @@
+import subprocess
 import os
 import sys
-#import torch as pytorch # pip install torch
-import requests # pip install requests
-from tqdm import tqdm # pip install tqdm
+
+def install(package):
+    subprocess.check_call([sys.executable, "pip", "-m", "install", package])
+
+#try:
+#   import torch as pytorch
+#except ImportError:
+#   install("torch") # pip install torch
+#   import torch as pytorch
+
+try:
+    import requests
+except ImportError:
+    install("requests") # pip install requests
+    import requests
+
+try:
+    from tqdm import tqdm
+except ImportError:
+    install("tqdm") # pip install tqdm
+    from tqdm import tqdm
 
 if len(sys.argv) != 2:
     print('You must enter the model name as a parameter, e.g.: download_model.py 124M')
