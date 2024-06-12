@@ -1,7 +1,8 @@
 import os
 import sys
-import requests
-from tqdm import tqdm
+#import torch as pytorch # pip install torch
+import requests # pip install requests
+from tqdm import tqdm # pip install tqdm
 
 if len(sys.argv) != 2:
     print('You must enter the model name as a parameter, e.g.: download_model.py 124M')
