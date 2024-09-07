@@ -5,23 +5,20 @@ import sys
 def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package]) # python -m pip install [package|[-r requirements.txt]]
 
-#try:
-#   import torch as pytorch
-#except ImportError:
-#   install("torch") # pip install torch
-#   import torch as pytorch
+try:
+   import torch as pytorch
+except ImportError:
+   print('Error [torch] module not installed. Please run download_prereqs.py to install [torch]')
 
 try:
     import requests
 except ImportError:
-    install("requests") # pip install requests
-    import requests
+   print('Error [requests] module not installed. Please run download_prereqs.py to install [requests]')
 
 try:
     from tqdm import tqdm
 except ImportError:
-    install("tqdm") # pip install tqdm
-    from tqdm import tqdm
+   print('Error [tqdm] module not installed. Please run download_prereqs.py to install [tqdm]')
 
 if len(sys.argv) != 2:
     print('You must enter the model name as a parameter, e.g.: download_model.py 124M')
