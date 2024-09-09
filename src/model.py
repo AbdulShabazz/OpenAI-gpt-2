@@ -1,7 +1,20 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.contrib.training import HParams
+#from tensorflow.contrib.training import HParams # deprecated, tf v2.17.0
 
+# use workaround
+class HParams:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+    
+    def override_from_dict(self, dict_):
+        for k, v in dict_.items():
+            if hasattr(self, k):
+                setattr(self, k, v)
+            else:
+                raise ValueError(f"Key {k} not found in HParams")
+            
 def default_hparams():
     return HParams(
         n_vocab=0,
