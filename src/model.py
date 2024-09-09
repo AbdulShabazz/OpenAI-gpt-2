@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import tensorflow as tf
 #from tensorflow.contrib.training import HParams # deprecated, tf v2.17.0
@@ -5,15 +6,36 @@ import tensorflow as tf
 # use workaround
 class HParams:
     def __init__(self, **kwargs):
+        self._hparams = {}
         for k, v in kwargs.items():
             setattr(self, k, v)
-    
+            self._hparams[k] = v
+
+    def __getattr__(self, name):
+        if name in self._hparams:
+            return self._hparams[name]
+        raise AttributeError(f"'HParams' object has no attribute '{name}'")
+
+    def __setattr__(self, name, value):
+        if name != '_hparams':
+            self._hparams[name] = value
+        super().__setattr__(name, value)
+
     def override_from_dict(self, dict_):
         for k, v in dict_.items():
-            if hasattr(self, k):
+            if k in self._hparams:
                 setattr(self, k, v)
             else:
                 raise ValueError(f"Key {k} not found in HParams")
+
+    @classmethod
+    def from_json(cls, json_file):
+        with open(json_file, 'r') as f:
+            params = json.load(f)
+        return cls(**params)
+
+    def to_dict(self):
+        return self._hparams.copy()
             
 def default_hparams():
     return HParams(
@@ -42,8 +64,8 @@ def norm(x, scope, *, axis=-1, epsilon=1e-5):
     """Normalize to mean = 0, std = 1, then do a diagonal affine transform."""
     with tf.variable_scope(scope):
         n_state = x.shape[-1].value
-        g = tf.get_variable('g', [n_state], initializer=tf.constant_initializer(1))
-        b = tf.get_variable('b', [n_state], initializer=tf.constant_initializer(0))
+        g = tf.compat.v1.get_variable('g', [n_state], initializer=tf.constant_initializer(1))
+        b = tf.compat.v1.get_variable('b', [n_state], initializer=tf.constant_initializer(0))
         u = tf.reduce_mean(x, axis=axis, keepdims=True)
         s = tf.reduce_mean(tf.square(x-u), axis=axis, keepdims=True)
         x = (x - u) * tf.rsqrt(s + epsilon)
@@ -63,8 +85,8 @@ def merge_states(x):
 def conv1d(x, scope, nf, *, w_init_stdev=0.02):
     with tf.variable_scope(scope):
         *start, nx = shape_list(x)
-        w = tf.get_variable('w', [1, nx, nf], initializer=tf.random_normal_initializer(stddev=w_init_stdev))
-        b = tf.get_variable('b', [nf], initializer=tf.constant_initializer(0))
+        w = tf.compat.v1.get_variable('w', [1, nx, nf], initializer=tf.random_normal_initializer(stddev=w_init_stdev))
+        b = tf.compat.v1.get_variable('b', [nf], initializer=tf.constant_initializer(0))
         c = tf.reshape(tf.matmul(tf.reshape(x, [-1, nx]), tf.reshape(w, [-1, nf]))+b, start+[nf])
         return c
 
@@ -158,13 +180,13 @@ def positions_for(tokens, past_length):
 
 
 def model(hparams, X, past=None, scope='model', reuse=False):
-    with tf.variable_scope(scope, reuse=reuse):
+    with tf.compat.v1.variable_scope(scope, reuse=reuse):
         results = {}
         batch, sequence = shape_list(X)
 
-        wpe = tf.get_variable('wpe', [hparams.n_ctx, hparams.n_embd],
+        wpe = tf.compat.v1.get_variable('wpe', [hparams.n_ctx, hparams.n_embd],
                              initializer=tf.random_normal_initializer(stddev=0.01))
-        wte = tf.get_variable('wte', [hparams.n_vocab, hparams.n_embd],
+        wte = tf.compat.v1.get_variable('wte', [hparams.n_vocab, hparams.n_embd],
                              initializer=tf.random_normal_initializer(stddev=0.02))
         past_length = 0 if past is None else tf.shape(past)[-2]
         h = tf.gather(wte, X) + tf.gather(wpe, positions_for(X, past_length))
