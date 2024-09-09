@@ -15,7 +15,7 @@ class HParams:
         if name in self._hparams:
             return self._hparams[name]
         raise AttributeError(f"'HParams' object has no attribute '{name}'")
-
+    
     def __setattr__(self, name, value):
         if name != '_hparams':
             self._hparams[name] = value
@@ -27,13 +27,13 @@ class HParams:
                 setattr(self, k, v)
             else:
                 raise ValueError(f"Key {k} not found in HParams")
-
+            
     @classmethod
     def from_json(cls, json_file):
         with open(json_file, 'r') as f:
             params = json.load(f)
         return cls(**params)
-
+    
     def to_dict(self):
         return self._hparams.copy()
             
@@ -92,14 +92,12 @@ def conv1d(x, scope, nf, *, w_init_stdev=0.02):
 
 def attention_mask(nd, ns, *, dtype):
     """1's in the lower triangle, counting from the lower right corner.
-
     Same as tf.matrix_band_part(tf.ones([nd, ns]), -1, ns-nd), but doesn't produce garbage on TPUs.
     """
     i = tf.range(nd)[:,None]
     j = tf.range(ns)
     m = i >= j - ns + nd
     return tf.cast(m, dtype)
-
 
 def attn(x, scope, n_state, *, past, hparams):
     assert x.shape.ndims == 3  # Should be [batch, sequence, features]
@@ -110,11 +108,11 @@ def attn(x, scope, n_state, *, past, hparams):
     def split_heads(x):
         # From [batch, sequence, features] to [batch, heads, sequence, features]
         return tf.transpose(split_states(x, hparams.n_head), [0, 2, 1, 3])
-
+    
     def merge_heads(x):
         # Reverse of split_heads
         return merge_states(tf.transpose(x, [0, 2, 1, 3]))
-
+    
     def mask_attn_weights(w):
         # w has shape [batch, heads, dst_sequence, src_sequence], where information flows from src to dst.
         _, _, nd, ns = shape_list(w)
@@ -127,7 +125,6 @@ def attn(x, scope, n_state, *, past, hparams):
         # q, k, v have shape [batch, heads, sequence, features]
         w = tf.matmul(q, k, transpose_b=True)
         w = w * tf.rsqrt(tf.cast(v.shape[-1].value, w.dtype))
-
         w = mask_attn_weights(w)
         w = softmax(w)
         a = tf.matmul(w, v)
@@ -146,14 +143,12 @@ def attn(x, scope, n_state, *, past, hparams):
         a = conv1d(a, 'c_proj', n_state)
         return a, present
 
-
 def mlp(x, scope, n_state, *, hparams):
     with tf.compat.v1.variable_scope(scope):
         nx = x.shape[-1].value
         h = gelu(conv1d(x, 'c_fc', n_state))
         h2 = conv1d(h, 'c_proj', nx)
         return h2
-
 
 def block(x, scope, *, past, hparams):
     with tf.compat.v1.variable_scope(scope):
@@ -178,19 +173,16 @@ def positions_for(tokens, past_length):
     nsteps = tf.shape(tokens)[1]
     return expand_tile(past_length + tf.range(nsteps), batch_size)
 
-
 def model(hparams, X, past=None, scope='model', reuse=False):
     with tf.compat.v1.variable_scope(scope, reuse=reuse):
         results = {}
         batch, sequence = shape_list(X)
-
         wpe = tf.compat.v1.get_variable('wpe', [hparams.n_ctx, hparams.n_embd],
                              initializer=tf.random_normal_initializer(stddev=0.01))
         wte = tf.compat.v1.get_variable('wte', [hparams.n_vocab, hparams.n_embd],
                              initializer=tf.random_normal_initializer(stddev=0.02))
         past_length = 0 if past is None else tf.shape(past)[-2]
         h = tf.gather(wte, X) + tf.gather(wpe, positions_for(X, past_length))
-
         # Transformer
         presents = []
         pasts = tf.unstack(past, axis=1) if past is not None else [None] * hparams.n_layer
@@ -200,7 +192,6 @@ def model(hparams, X, past=None, scope='model', reuse=False):
             presents.append(present)
         results['present'] = tf.stack(presents, axis=1)
         h = norm(h, 'ln_f')
-
         # Language model loss.  Do tokens <n predict token n?
         h_flat = tf.reshape(h, [batch*sequence, hparams.n_embd])
         logits = tf.matmul(h_flat, wte, transpose_b=True)
