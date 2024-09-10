@@ -36,7 +36,26 @@ class HParams:
     
     def to_dict(self):
         return self._hparams.copy()
-            
+
+HPARAMS_117M = {
+  "n_vocab": 50257,
+  "n_ctx": 1024,
+  "n_embd": 768,
+  "n_head": 12,
+  "n_layer": 12
+}
+
+HPARAMS_355M = {
+  "n_vocab": 50257,
+  "n_ctx": 1024,
+  "n_embd": 1024,
+  "n_head": 16,
+  "n_layer": 24
+}
+
+HPARAMS = {"117M": HPARAMS_117M,
+           "355M": HPARAMS_355M}
+
 def default_hparams():
     return HParams(
         n_vocab=0,
