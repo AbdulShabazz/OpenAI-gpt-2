@@ -118,3 +118,33 @@ def sample_sequence(
         text_completion = codec_instance.decode(tokens[0], skip_special_tokens=True)
 
         return text_completion
+
+class GPT2Model(tf.keras.Model):
+    def __init__(self, hparams):
+        super(GPT2Model, self).__init__()
+        # Initialize your model layers here based on hparams
+        # For example:
+        self.embed = tf.keras.layers.Embedding(hparams.vocab_size, hparams.n_embd)
+        self.transformer_blocks = [
+            TransformerBlock(hparams) for _ in range(hparams.n_layer)
+        ]
+        self.fc = tf.keras.layers.Dense(hparams.vocab_size)
+
+    def call(self, inputs):
+        x = self.embed(inputs)
+        for block in self.transformer_blocks:
+            x = block(x)
+        return self.fc(x)
+
+class TransformerBlock(tf.keras.layers.Layer):
+    def __init__(self, hparams):
+        super(TransformerBlock, self).__init__()
+        # Initialize transformer block layers
+        # (attention, feed forward, layer norm, etc.)
+
+    def call(self, inputs):
+        # Implement the forward pass of the transformer block
+        pass
+
+def create_model(hparams):
+    return GPT2Model(hparams)
