@@ -60,6 +60,16 @@ def sample_sequence(
     else:
         assert context is None, 'Specify exactly one of start_token and context!'
         context = tf.fill([batch_size, 1], start_token)
+        
+    def determine_length(provided_length=50, max_length=50):
+        if provided_length is None:
+            return max_length
+        if provided_length > max_length:
+            print(f"Warning: Provided length ({provided_length}) exceeds maximum length ({max_length}). Using maximum length.")
+            return max_length
+        return provided_length
+    
+    length = determine_length(provided_length=length, max_length=hparams.n_ctx)
 
     def step(hparams, tokens, past=None):
         lm_output = model.model(hparams=hparams, X=tokens, past=past, reuse=tf.compat.v1.AUTO_REUSE)
