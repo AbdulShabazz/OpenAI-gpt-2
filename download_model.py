@@ -8,19 +8,19 @@ def install(package):
 try:
    import torch as pytorch
 except ImportError:
-    print('Error [torch] module not installed. Please run download_prereqs.py to install [torch]')    
+    print('Error [torch] module not installed. Please run download_model_prereqs.py to install [torch]')    
     sys.exit(1)
 
 try:
     import requests
 except ImportError:
-    print('Error [requests] module not installed. Please run download_prereqs.py to install [requests]')
+    print('Error [requests] module not installed. Please run download_model_prereqs.py to install [requests]')
     sys.exit(1)
 
 try:
     from tqdm import tqdm
 except ImportError:
-    print('Error [tqdm] module not installed. Please run download_prereqs.py to install [tqdm]')
+    print('Error [tqdm] module not installed. Please run download_model_prereqs.py to install [tqdm]')
     sys.exit(1)
 
 if len(sys.argv) != 2:
