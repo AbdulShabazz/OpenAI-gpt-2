@@ -40,7 +40,19 @@ def top_p_logits(logits, p):
         logits,
     )
 
-def sample_sequence(*, hparams=model.default_hparams(), length=50, model_name='124M', model_dir='../models', start_token=None, batch_size=None, context="Hello, how are you today?", temperature=1, top_k=0, top_p=1):    
+def sample_sequence(
+    *,
+    hparams=model.default_hparams(),
+    length=50,
+    model_name='124M',
+    model_dir='../models',
+    start_token=None,
+    batch_size=None,
+    context="Hello, how are you today?",
+    temperature=1,
+    top_k=0,
+    top_p=1
+):
     codec_instance = codec.get_encoder(model_name,model_dir)
     context = codec_instance.encode(context) # [15496, 11, 703, 389, 345, 1909, 30]
     if start_token is None:
