@@ -1,20 +1,11 @@
-"""test case encoding/decoding utility"""
+"""test gpt2 model"""
 
-import sample
-import model
-import encoder
+import gpt2
 
-# Define the prompt
+model_name = '124M'
+model_dir = '../models'
 prompt = "Hello, how are you today?"
 
-gpt2 = encoder.get_encoder('124M','../models')
+text_completion = gpt2.sample_sequence(model_name=model_name, model_dir=model_dir, context=prompt, length=50)
 
-tokens = gpt2.encode(prompt) # [15496, 11, 703, 389, 345, 1909, 30]
-
-# Generate a response (optional)
-hparams = model.default_hparams()
-output = sample.sample_sequence(hparams,tokens, length=50)
-
-# Decode the generated output
-generated_text = gpt2.decode(output[0], skip_special_tokens=True)
-print("Generated text:", generated_text)
+print("Generated text:", text_completion)

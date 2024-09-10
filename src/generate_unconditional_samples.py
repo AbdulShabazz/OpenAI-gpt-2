@@ -6,7 +6,7 @@ import os
 import numpy as np
 import tensorflow as tf
 
-import model, sample, encoder
+import model, gpt2, codec
 
 def sample_model(
     model_name='124M',
@@ -41,7 +41,7 @@ def sample_model(
      (i.e. contains the <model_name> folder)
     """
     models_dir = os.path.expanduser(os.path.expandvars(models_dir))
-    enc = encoder.get_encoder(model_name, models_dir)
+    enc = codec.get_encoder(model_name, models_dir)
     hparams = model.default_hparams()
     with open(os.path.join(models_dir, model_name, 'hparams.json')) as f:
         hparams.override_from_dict(json.load(f))
@@ -55,7 +55,7 @@ def sample_model(
         np.random.seed(seed)
         tf.set_random_seed(seed)
 
-        output = sample.sample_sequence(
+        output = gpt2.sample_sequence(
             hparams=hparams, length=length,
             start_token=enc.encoder['<|endoftext|>'],
             batch_size=batch_size,
