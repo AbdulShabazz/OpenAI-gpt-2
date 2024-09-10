@@ -5,8 +5,8 @@ import json
 import os
 import numpy as np
 import tensorflow as tf
-
-import model, gpt2, codec
+import model as gpt_model
+import gpt2, codec
 
 def interact_model(
     model_name='124M',
@@ -17,7 +17,7 @@ def interact_model(
     temperature=1,
     top_k=0,
     top_p=1,
-    models_dir='models',
+    models_dir='../models',
 ):
     """
     Interactively run the model
@@ -45,7 +45,7 @@ def interact_model(
     assert nsamples % batch_size == 0
 
     enc = codec.get_encoder(model_name, models_dir)
-    hparams = model.default_hparams()
+    hparams = gpt_model.default_hparams()
     with open(os.path.join(models_dir, model_name, 'hparams.json')) as f:
         hparams.override_from_dict(json.load(f))
 
@@ -54,39 +54,53 @@ def interact_model(
     elif length > hparams.n_ctx:
         raise ValueError("Can't get samples longer than window size: %s" % hparams.n_ctx)
 
-    with tf.Session(graph=tf.Graph()) as sess:
-        context = tf.placeholder(tf.int32, [batch_size, None])
-        np.random.seed(seed)
-        tf.set_random_seed(seed)
-        output = gpt2.sample_sequence(
-            hparams=hparams, length=length,
-            context=context,
-            batch_size=batch_size,
-            temperature=temperature, top_k=top_k, top_p=top_p
-        )
+    # Set up the seed for reproducibility
+    seed = 42  # Or whatever seed value you were using before
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
 
-        saver = tf.train.Saver()
-        ckpt = tf.train.latest_checkpoint(os.path.join(models_dir, model_name))
-        saver.restore(sess, ckpt)
+    # Create the model
+    gpt2_instance = gpt_model.create_model(hparams)  # Assuming you have a function to create the model
 
-        while True:
+    # Set up the checkpoint manager
+    checkpoint_dir = os.path.join(models_dir, model_name)
+    checkpoint = tf.train.Checkpoint(model=gpt2_instance)
+    ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=5)
+
+    # Restore the latest checkpoint
+    if ckpt_manager.latest_checkpoint:
+        checkpoint.restore(ckpt_manager.latest_checkpoint).expect_partial()
+        print(f"Model restored from {ckpt_manager.latest_checkpoint}")
+    else:
+        print("Initializing from scratch.")
+
+    # Create a function to run the model
+    @tf.function
+    def run_model(context):
+        return gpt_model.sample_sequence(context=context)  # Assuming your model can be called directly
+
+    # Interactive prompt loop
+    while True:
+        raw_text = input("Model prompt >>> ")
+        while not raw_text:
+            print('Prompt should not be empty!')
             raw_text = input("Model prompt >>> ")
-            while not raw_text:
-                print('Prompt should not be empty!')
-                raw_text = input("Model prompt >>> ")
-            context_tokens = enc.encode(raw_text)
-            generated = 0
-            for _ in range(nsamples // batch_size):
-                out = sess.run(output, feed_dict={
-                    context: [context_tokens for _ in range(batch_size)]
-                })[:, len(context_tokens):]
-                for i in range(batch_size):
-                    generated += 1
-                    text = enc.decode(out[i])
-                    print("=" * 40 + " SAMPLE " + str(generated) + " " + "=" * 40)
-                    print(text)
-            print("=" * 80)
+        
+        context_tokens = enc.encode(raw_text)
+        context_tokens_tensor = tf.convert_to_tensor([context_tokens] * batch_size, dtype=tf.int32)
+        
+        generated = 0
+        for _ in range(nsamples // batch_size):
+            output = run_model(context_tokens_tensor)
+            output = output[:, len(context_tokens):].numpy()
+            
+            for i in range(batch_size):
+                generated += 1
+                text = enc.decode(output[i])
+                print("=" * 40 + " SAMPLE " + str(generated) + " " + "=" * 40)
+                print(text)
+        
+        print("=" * 80)
 
 if __name__ == '__main__':
     fire.Fire(interact_model)
-
