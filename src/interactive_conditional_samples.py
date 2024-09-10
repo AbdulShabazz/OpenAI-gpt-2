@@ -72,7 +72,7 @@ def interact_model(
         checkpoint.restore(ckpt_manager.latest_checkpoint).expect_partial()
         print(f"Model restored from {ckpt_manager.latest_checkpoint}")
     else:
-        print("Initializing from scratch.")
+        print("Initializing model...")
 
     # Create a function to run the model
     @tf.function
