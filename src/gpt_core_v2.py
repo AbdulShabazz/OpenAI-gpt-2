@@ -1,5 +1,5 @@
 import tensorflow as tf
-import model
+import gpt
 import codec
 
 def top_k_logits(logits, k):
@@ -40,7 +40,7 @@ def top_p_logits(logits, p):
 
 def sample_sequence(
     *,
-    hparams=model.default_hparams(),
+    hparams=gpt.default_hparams(),
     length=50,
     model_name='124M',
     model_dir='../models',
@@ -70,11 +70,11 @@ def sample_sequence(
     length = determine_length(provided_length=length, max_length=hparams.n_ctx)
 
     def step(hparams, tokens, past=None):
-        lm_output = model.model(hparams=hparams, X=tokens, past=past, reuse=tf.compat.v1.AUTO_REUSE)
+        lm_output = gpt.model(hparams=hparams, X=tokens, past=past, reuse=tf.compat.v1.AUTO_REUSE)
 
         logits = lm_output['logits'][:, :, :hparams.n_vocab]
         presents = lm_output['present']
-        presents.set_shape(model.past_shape(hparams=hparams, batch_size=batch_size))
+        presents.set_shape(gpt.past_shape(hparams=hparams, batch_size=batch_size))
         return {
             'logits': logits,
             'presents': presents,
@@ -107,7 +107,7 @@ def sample_sequence(
                 output
             ],
             shape_invariants=[
-                tf.TensorShape(model.past_shape(hparams=hparams, batch_size=batch_size)),
+                tf.TensorShape(gpt.past_shape(hparams=hparams, batch_size=batch_size)),
                 tf.TensorShape([batch_size, None]),
                 tf.TensorShape([batch_size, None]),
             ],
