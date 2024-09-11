@@ -10,6 +10,54 @@ We have also [released a dataset](https://github.com/openai/gpt-2-output-dataset
 
 <sup>*</sup> *Note that our original parameter counts were wrong due to an error (in our previous blog posts and paper).  Thus you may have seen small referred to as 117M and medium referred to as 345M.*
 
+# GPT-2 Python Model Directory
+
+This repository contains the refactored implementation of a GPT-2 model in Python. The project has been organized into multiple files, each serving a distinct purpose to streamline both model functionality and API interaction.
+
+## Project Structure
+
+### 1. `gpt.py`
+   - **Purpose**: 
+     This file houses the core GPT-2 model logic. It handles tasks like loading pre-trained models, training new models, fine-tuning on datasets, saving/loading models from disk, and managing model parameters.
+   - **Key Functions**:
+     - `load_model()`: Loads the GPT-2 model.
+     - `train_model()`: Trains or fine-tunes the GPT-2 model on a given dataset.
+     - `save_model()`: Saves the trained model for later use.
+
+### 2. `gpt_core_v2.py`
+   - **Purpose**:
+     This file contains all the APIs that define how the GPT-2 model is queried, trained, or interacted with by external applications. Any updates to the APIs in this file will reflect updates to how the GPT-2 model can be accessed.
+   - **Key Functions**:
+     - `query_model(prompt)`: Takes in a user-provided text prompt and returns a text completion from the GPT-2 model.
+     - `train_via_api()`: An API endpoint that allows training the GPT-2 model through external calls.
+     - `save_model_via_api()`: An API endpoint to save the current state of the model through external calls.
+
+### 3. `codec.py`
+   - **Purpose**:
+     This file contains the encoder and decoder modules, responsible for parsing prompts into tokenized formats and converting model outputs back into human-readable text.
+   - **Key Functions**:
+     - `encode(text)`: Converts text into tokenized input to be fed into the model.
+     - `decode(tokens)`: Converts tokenized output from the model back into readable text.
+
+### 4. `example.py`
+   - **Purpose**:
+     This file is an example script to demonstrate how to interact with the GPT-2 model using the API from `gpt_core_v2.py`. It shows sample queries and potential use cases.
+   - **Key Functions**:
+     - Example use of `query_model()` to generate text completions.
+     - Sample inputs and outputs from the GPT-2 model.
+
+## Usage
+
+- To interact with the GPT-2 model through APIs, use the endpoints defined in `gpt_core_v2.py`.
+- To load or train the model, refer to the functions in `gpt.py`.
+- For encoding/decoding tasks, utilize the helper functions in `codec.py`.
+- Refer to `example.py` for a basic demonstration of how to query the model.
+
+## Future Updates
+
+- The APIs in `gpt_core_v2.py` will be updated as needed to reflect the latest interaction methods for the GPT-2 model.
+- Future versions of the API file will follow a similar naming convention (e.g., `gpt_core_v3.py` for subsequent updates).
+
 ## Usage
 
 This repository is meant to be a starting point for researchers and engineers to experiment with GPT-2.
