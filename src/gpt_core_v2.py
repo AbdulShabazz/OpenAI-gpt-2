@@ -44,8 +44,9 @@ class HParams:
         raise AttributeError(f"'HParams' object has no attribute '{pname}'")
     
     def __setattr__(self, pname, pvalue):
-        if pname in HPARAMS_PROTO and pvalue is not None:
-            self._hparams[pname] = pvalue
+        if pname in HPARAMS_PROTO:
+            pval = HPARAMS_PROTO[pname] if pvalue is None else pvalue
+            self._hparams[pname] = pval
         super().__setattr__(pname, pvalue)
 
     def __validate_and_set__(self, pname: str, pvalue: Any):
