@@ -1,41 +1,8 @@
 import json
 import numpy as np
 import tensorflow as tf
+from typing import Any
 #from tensorflow.contrib.training import HParams # deprecated, tf v2.17.0
-
-# use workaround
-class HParams:
-    def __init__(self, **kwargs):
-        self._hparams = {}
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-            self._hparams[k] = v
-
-    def __getattr__(self, name):
-        if name in self._hparams:
-            return self._hparams[name]
-        raise AttributeError(f"'HParams' object has no attribute '{name}'")
-    
-    def __setattr__(self, name, value):
-        if name != '_hparams':
-            self._hparams[name] = value
-        super().__setattr__(name, value)
-
-    def override_from_dict(self, dict_):
-        for k, v in dict_.items():
-            if k in self._hparams:
-                setattr(self, k, v)
-            else:
-                raise ValueError(f"Key {k} not found in HParams")
-            
-    @classmethod
-    def from_json(cls, json_file):
-        with open(json_file, 'r') as f:
-            params = json.load(f)
-        return cls(**params)
-    
-    def to_dict(self):
-        return self._hparams.copy()
 
 HPARAMS_117M = {
   "n_vocab": 50257,
@@ -53,8 +20,54 @@ HPARAMS_355M = {
   "n_layer": 24
 }
 
-HPARAMS = {"117M": HPARAMS_117M,
-           "355M": HPARAMS_355M}
+HPARAMS = { "117M": HPARAMS_117M,
+            "355M": HPARAMS_355M }
+
+HPARAMS_PROTO = {
+  "n_vocab": 50257,
+  "n_ctx": 1024,
+  "n_embd": 768,
+  "n_head": 12,
+  "n_layer": 12
+}
+
+# use HParams deprecated workaround
+class HParams:
+    def __init__(self, **kwargs):
+        self._hparams = {}
+        for k, v in kwargs.items():
+            self.__validate_and_set__(pname=k, pvalue=v)
+
+    def __getattr__(self, pname):
+        if pname in self._hparams:
+            return self._hparams[pname]
+        raise AttributeError(f"'HParams' object has no attribute '{pname}'")
+    
+    def __setattr__(self, pname, pvalue):
+        if pname in HPARAMS_PROTO and pvalue is not None:
+            self._hparams[pname] = pvalue
+        super().__setattr__(pname, pvalue)
+
+    def __validate_and_set__(self, pname: str, pvalue: Any):
+        if pname in HPARAMS_PROTO:
+            pval = HPARAMS_PROTO[pname] if pvalue is None else pvalue
+            setattr(self, pname, pval)
+            self._hparams[pname] = pval
+        else:            
+            raise ValueError(f"Key [{pname}] not found in HParams")
+
+    def override_from_dict(self, dict_):
+        for k, v in dict_.items():
+            self.__validate_and_set__(pname=k, pvalue=v)
+            
+    @classmethod
+    def from_json(cls, json_file):
+        with open(json_file, 'r') as f:
+            params = json.load(f)
+        return cls(**params)
+    
+    def to_dict(self):
+        return self._hparams.copy()
 
 def default_hparams():
     return HParams(
