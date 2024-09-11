@@ -5,7 +5,6 @@ import json
 import os
 import numpy as np
 import tensorflow as tf
-import gpt_core_v2 as gpt_model
 import gpt, codec
 
 def interact_model(
@@ -45,14 +44,14 @@ def interact_model(
     assert nsamples % batch_size == 0
 
     enc = codec.get_encoder(model_name, models_dir)
-    hparams = gpt_model.default_hparams()
+    hparams = gpt.default_hparams()
     with open(os.path.join(models_dir, model_name, 'hparams.json')) as f:
         hparams.override_from_dict(json.load(f))
 
     if length is None:
         length = hparams.n_ctx // 2
     elif length > hparams.n_ctx:
-        raise ValueError("Can't get samples longer than window size: %s" % hparams.n_ctx)
+        raise ValueError("Can't capture samples longer than window size: %s" % hparams.n_ctx)
 
     # Set up the seed for reproducibility
     seed = 42  # Or whatever seed value you were using before
@@ -60,7 +59,7 @@ def interact_model(
     tf.random.set_seed(seed)
 
     # Create the model
-    gpt2_instance = gpt_model.create_model(hparams)  # Assuming you have a function to create the model
+    gpt2_instance = gpt.create_model(hparams)  # Assuming you have a function to create the model
 
     # Set up the checkpoint manager
     checkpoint_dir = os.path.join(models_dir, model_name)
@@ -76,14 +75,14 @@ def interact_model(
 
     # Create a function to run the model
     @tf.function
-    def run_model(context):
-        return gpt_model.sample_sequence(context=context)  # Assuming your model can be called directly
+    def submit_query(context):
+        return gpt.submit_query(context=context)  # Assuming your model can be called directly
 
     # Interactive prompt loop
     while True:
         raw_text = input("Model prompt >>> ")
         while not raw_text:
-            print('Prompt should not be empty!')
+            print('Please supply a text Prompt to the model!')
             raw_text = input("Model prompt >>> ")
         
         context_tokens = enc.encode(raw_text)
@@ -91,7 +90,7 @@ def interact_model(
         
         generated = 0
         for _ in range(nsamples // batch_size):
-            output = run_model(context_tokens_tensor)
+            output = submit_query(context=context_tokens_tensor)
             output = output[:, len(context_tokens):].numpy()
             
             for i in range(batch_size):
@@ -102,5 +101,33 @@ def interact_model(
         
         print("=" * 80)
 
+import gpt
+
+def main():
+    batch_size = 1  # You can adjust this as needed
+    nsamples = 1  # You can adjust this as needed
+
+    # Interactive prompt loop
+    while True:
+        raw_text = input("Model prompt >>> ")
+        while not raw_text:
+            print('Please supply a text Prompt to the model!')
+            raw_text = input("Model prompt >>> ")
+        
+        context_tokens_tensor, context_length = gpt.encode_input(raw_text, batch_size)
+        
+        generated = 0
+        for _ in range(nsamples // batch_size):
+            generated += 1
+            text = gpt.generate_sample(context_tokens_tensor, context_length)
+            print("=" * 40 + " SAMPLE " + str(generated) + " " + "=" * 40)
+            print(text)
+        
+        print("=" * 80)
+
+if __name__ == "__main__":
+    main()
+
 if __name__ == '__main__':
     fire.Fire(interact_model)
+
