@@ -38,6 +38,6 @@ except ImportError:
    install("torch") # pip install torch
    #install("torchvision") # pip install torchvision 
    #install("torchaudio") # pip install torchaudio
-   print('***INFO***: the [torch] module also requires some additional DLLs which can be downloaded with Powershell: curl -o vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redistx64.exe')
+   print('***INFO***: the [torch] module also requires some additional DLLs which can be downloaded with Powershell: curl -o vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe')
 
 print("\nDownloads Complete!")
