@@ -39,7 +39,7 @@ This repository contains the refactored implementation of a GPT-2 model in Pytho
 
 ### 4. `example.py`
    - **Purpose**:
-     This file is an example script to demonstrate how to interact with the GPT-2 model using the API from `gpt.py`. It shows sample queries and potential use cases.
+     This file is an example script to demonstrate how to interact with the GPT-2 model using the basic APIs from the `gpt.py` module. It shows sample queries and potential use cases.
    - **Key Functions**:
      - Example use of `query_model()` to generate text completions.
      - Sample inputs and outputs from the GPT-2 model.
