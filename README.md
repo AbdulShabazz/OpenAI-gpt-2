@@ -16,7 +16,7 @@ This repository contains the refactored implementation of a GPT-2 model in Pytho
 
 ### 1. `gpt.py`
    - **Purpose**: 
-     This file houses the core GPT-2 model logic. It handles tasks like loading pre-trained models, training new models, fine-tuning on datasets, saving/loading models from disk, and managing model parameters.
+     This file houses the basic GPT-2 model logic. It handles tasks like loading pre-trained models, training new models, fine-tuning on datasets, saving/loading models from disk, and managing model parameters.
    - **Key Functions**:
      - `load_model()`: Loads the GPT-2 model.
      - `train_model()`: Trains or fine-tunes the GPT-2 model on a given dataset.
@@ -25,7 +25,7 @@ This repository contains the refactored implementation of a GPT-2 model in Pytho
 
 ### 2. `gpt_core_v2.py`
    - **Purpose**:
-     This file contains all the APIs that define how the GPT model is queried, trained, or interacted with by external applications. Any updates to the APIs in this file will reflect updates to how the new GPT model can be accessed.
+     This file contains all the APIs that define the GPT's architecture. Any updates to the APIs in this file will reflect updates to how the new GPT model can be accessed.
    - **Key Functions**:
      - `train_via_api()`: An API endpoint that allows training the GPT-2 model through external calls.
      - `save_model_via_api()`: An API endpoint to save the current state of the model through external calls.
@@ -59,7 +59,6 @@ For basic information, see our [model card](./model_card.md).
 
 - `gpt.py` and the APIs in `gpt_core_v2.py` will be updated as needed to reflect the latest achitecture and or interaction methods for the GPT-2 model.
 - Future versions of the API file will follow a similar naming convention (e.g., `gpt_core_vW.X.Y.Z.py` for subsequent updates).
-
 ### Some caveats
 
 - GPT-2 models' robustness and worst case behaviors are not well-understood.  As with any machine-learned model, carefully evaluate GPT-2 for your use case, especially if used without fine-tuning or in safety-critical applications where reliability is important.
