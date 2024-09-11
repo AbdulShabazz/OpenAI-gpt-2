@@ -21,6 +21,9 @@ def top_k_logits(logits, k):
        lambda: _top_k(),
     )
 
+def default_hparams():
+    return gpt_core_v2.default_hparams()
+
 def top_p_logits(logits, p):
     """Nucleus sampling"""
     batch, _ = logits.shape.as_list()
@@ -38,7 +41,7 @@ def top_p_logits(logits, p):
         logits,
     )
 
-def sample_sequence(
+def submit_query(
     *,
     hparams=gpt_core_v2.default_hparams(),
     length=50,
@@ -118,6 +121,25 @@ def sample_sequence(
         text_completion = codec_instance.decode(tokens[0], skip_special_tokens=True)
 
         return text_completion
+
+def encode_input(raw_text, batch_size):
+    context_tokens = enc.encode(raw_text)
+    return tf.convert_to_tensor([context_tokens] * batch_size, dtype=tf.int32), len(context_tokens)
+
+def decode_output(output):
+    return enc.decode(output)
+
+@tf.function
+def submit_query(context):
+    # Your existing submit_query implementation goes here
+    pass
+
+def generate_sample(context_tokens_tensor, context_length):
+    output = submit_query(context=context_tokens_tensor)
+    output = output[:, context_length:].numpy()
+    return decode_output(output[0])
+
+def get_token_length(text):
 
 class GPT2Model(tf.keras.Model):
     def __init__(self, hparams):
