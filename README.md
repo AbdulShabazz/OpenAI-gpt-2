@@ -46,6 +46,10 @@ This repository contains the refactored implementation of a GPT-2 model in Pytho
 
 ## Usage
 
+This repository is meant to be a starting point for researchers and engineers to experiment with GPT-2.
+
+For basic information, see our [model card](./model_card.md).
+
 - To update the GPT-2 model aka its APIs, use the endpoints defined in `gpt_core_v2.py`.
 - To load or train the model, refer to the functions in `gpt.py`.
 - For encoding/decoding tasks, utilize the helper functions in `codec.py`.
@@ -55,12 +59,6 @@ This repository contains the refactored implementation of a GPT-2 model in Pytho
 
 - `gpt.py` and the APIs in `gpt_core_v2.py` will be updated as needed to reflect the latest achitecture and or interaction methods for the GPT-2 model.
 - Future versions of the API file will follow a similar naming convention (e.g., `gpt_core_vW.X.Y.Z.py` for subsequent updates).
-
-## Usage
-
-This repository is meant to be a starting point for researchers and engineers to experiment with GPT-2.
-
-For basic information, see our [model card](./model_card.md).
 
 ### Some caveats
 
