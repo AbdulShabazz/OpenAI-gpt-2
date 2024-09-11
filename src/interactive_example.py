@@ -5,8 +5,8 @@ import json
 import os
 import numpy as np
 import tensorflow as tf
-import model as gpt_model
-import gpt2, codec
+import gpt as gpt_model
+import gpt2_core_v2, codec
 
 def interact_model(
     model_name='124M',
@@ -104,3 +104,4 @@ def interact_model(
 
 if __name__ == '__main__':
     fire.Fire(interact_model)
+
