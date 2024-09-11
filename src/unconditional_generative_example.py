@@ -5,7 +5,7 @@ import json
 import os
 import numpy as np
 import tensorflow as tf
-import model, gpt2, codec
+import gpt, gpt2_core_v2, codec
 
 def sample_model(
     model_name='124M',
@@ -41,7 +41,7 @@ def sample_model(
     """
     models_dir = os.path.expanduser(os.path.expandvars(models_dir))
     enc = codec.get_encoder(model_name, models_dir)
-    hparams = model.default_hparams()
+    hparams = gpt.default_hparams()
     with open(os.path.join(models_dir, model_name, 'hparams.json')) as f:
         hparams.override_from_dict(json.load(f))
 
@@ -54,7 +54,7 @@ def sample_model(
         np.random.seed(seed)
         tf.compat.v1.set_random_seed(seed)
 
-        output = gpt2.sample_sequence(
+        output = gpt2_core_v2.sample_sequence(
             hparams=hparams, length=length,
             start_token=enc.encoder['<|endoftext|>'],
             batch_size=batch_size,
@@ -76,3 +76,4 @@ def sample_model(
 
 if __name__ == '__main__':
     fire.Fire(sample_model)
+
