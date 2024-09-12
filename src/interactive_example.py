@@ -2,7 +2,6 @@
 
 """interactive GPT prompt environment"""
 
-#from importlib.resources import open_text
 import json
 import os
 import fire
@@ -88,11 +87,11 @@ def interactive_model(
         
         context_tokens = enc.encode(raw_text)
         tokens_length = len(context_tokens)
-        context_tokens_tensor = tf.convert_to_tensor([context_tokens] * batch_size, dtype=tf.int32)    
+        #context_tokens_tensor = tf.convert_to_tensor([context_tokens] * batch_size, dtype=tf.int32)    
         generated = 0
 
         for _ in range(nsamples // batch_size):
-            text_output = gpt.submit_query(context = context_tokens_tensor, length = tokens_length, batch_size = batch_size)
+            text_output = gpt.submit_query(context = context_tokens, length = tokens_length, batch_size = batch_size)
             generated += 1
             print("=" * 40 + " EXAMPLE " + str(generated) + " " + "=" * 40)
             print(text_output)
