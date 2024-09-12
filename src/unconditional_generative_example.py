@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import fire
 import json
 import os
+import fire
 import numpy as np
 import tensorflow as tf
 import gpt_core_v2
@@ -11,10 +11,10 @@ import codec
 
 def generative_example(
     model_name='124M',
-    seed=None,
+    seed=75,
     nsamples=0,
     batch_size=1,
-    length=None,
+    length=50,
     temperature=1,
     top_k=0,
     top_p=1,
