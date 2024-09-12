@@ -1,7 +1,7 @@
 import json
+from typing import Any
 import numpy as np
 import tensorflow as tf
-from typing import Any
 #from tensorflow.contrib.training import HParams # deprecated, tf v2.17.0
 
 HPARAMS_117M = {
@@ -31,7 +31,7 @@ HPARAMS_PROTO = {
   "n_layer": 12
 }
 
-# use HParams deprecated workaround
+# use deprecated HParams workaround
 class HParams:
     def __init__(self, **kwargs):
         self._hparams = {}
@@ -42,7 +42,7 @@ class HParams:
         if pname in self._hparams:
             return self._hparams[pname]
         raise AttributeError(f"'HParams' object has no attribute '{pname}'")
-    
+
     def __setattr__(self, pname, pvalue):
         if pname in HPARAMS_PROTO:
             pval = HPARAMS_PROTO[pname] if pvalue is None else pvalue
@@ -54,19 +54,19 @@ class HParams:
             pval = HPARAMS_PROTO[pname] if pvalue is None else pvalue
             setattr(self, pname, pval)
             self._hparams[pname] = pval
-        else:            
+        else:
             raise ValueError(f"Key [{pname}] not found in HParams")
 
     def override_from_dict(self, dict_):
         for k, v in dict_.items():
             self.__validate_and_set__(pname=k, pvalue=v)
-            
+
     @classmethod
     def from_json(cls, json_file):
-        with open(json_file, 'r') as f:
+        with open(json_file, 'r', encoding="UTF-8") as f:
             params = json.load(f)
         return cls(**params)
-    
+
     def to_dict(self):
         return self._hparams.copy()
 
@@ -101,7 +101,7 @@ def norm(x, scope, *, axis=-1, epsilon=1e-5):
         b = tf.compat.v1.get_variable('b', [n_state], initializer=tf.constant_initializer(0))
         u = tf.reduce_mean(x, axis=axis, keepdims=True)
         s = tf.reduce_mean(tf.square(x-u), axis=axis, keepdims=True)
-        x = (x - u) * tf.rsqrt(s + epsilon)
+        x = (x - u) * tf.compat.v1.math.rsqrt(s + epsilon)
         x = x*g + b
         return x
 
@@ -141,11 +141,11 @@ def attn(x, scope, n_state, *, past, hparams):
     def split_heads(x):
         # From [batch, sequence, features] to [batch, heads, sequence, features]
         return tf.transpose(split_states(x, hparams.n_head), [0, 2, 1, 3])
-    
+
     def merge_heads(x):
         # Reverse of split_heads
         return merge_states(tf.transpose(x, [0, 2, 1, 3]))
-    
+
     def mask_attn_weights(w):
         # w has shape [batch, heads, dst_sequence, src_sequence], where information flows from src to dst.
         _, _, nd, ns = shape_list(w)
@@ -157,7 +157,7 @@ def attn(x, scope, n_state, *, past, hparams):
     def multihead_attn(q, k, v):
         # q, k, v have shape [batch, heads, sequence, features]
         w = tf.matmul(q, k, transpose_b=True)
-        w = w * tf.rsqrt(tf.cast(v.shape[-1].value, w.dtype))
+        w = w * tf.compat.v1.math.rsqrt(tf.cast(v.shape[-1].value, w.dtype))
         w = mask_attn_weights(w)
         w = softmax(w)
         a = tf.matmul(w, v)
@@ -176,7 +176,7 @@ def attn(x, scope, n_state, *, past, hparams):
         a = conv1d(a, 'c_proj', n_state)
         return a, present
 
-def mlp(x, scope, n_state, *, hparams):
+def mlp(x, scope, n_state, *, hparams=None):
     with tf.compat.v1.variable_scope(scope):
         nx = x.shape[-1].value
         h = gelu(conv1d(x, 'c_fc', n_state))
@@ -206,16 +206,16 @@ def positions_for(tokens, past_length):
     nsteps = tf.shape(tokens)[1]
     return expand_tile(past_length + tf.range(nsteps), batch_size)
 
-def model(hparams, X, past=None, scope='model', reuse=False):
+def model(hparams, input_tokens, past=None, scope='model', reuse=False):
     with tf.compat.v1.variable_scope(scope, reuse=reuse):
         results = {}
-        batch, sequence = shape_list(X)
+        batch, sequence = shape_list(input_tokens)
         wpe = tf.compat.v1.get_variable('wpe', [hparams.n_ctx, hparams.n_embd],
                              initializer=tf.random_normal_initializer(stddev=0.01))
         wte = tf.compat.v1.get_variable('wte', [hparams.n_vocab, hparams.n_embd],
                              initializer=tf.random_normal_initializer(stddev=0.02))
         past_length = 0 if past is None else tf.shape(past)[-2]
-        h = tf.gather(wte, X) + tf.gather(wpe, positions_for(X, past_length))
+        h = tf.gather(wte, input_tokens) + tf.gather(wpe, positions_for(input_tokens, past_length))
         # Transformer
         presents = []
         pasts = tf.unstack(past, axis=1) if past is not None else [None] * hparams.n_layer
