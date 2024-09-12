@@ -8,7 +8,6 @@ import os
 import fire
 import numpy as np
 import tensorflow as tf
-import codec
 import gpt
 
 def interactive_model(
@@ -47,7 +46,7 @@ def interactive_model(
         batch_size = 1
     assert nsamples % batch_size == 0
 
-    enc = codec.get_encoder(model_name, models_dir)
+    enc = gpt.get_encoder(model_name, models_dir)
     
     hparams = gpt.default_hparams()
     with open(os.path.join(models_dir, model_name, 'hparams.json'), encoding="UTF-8") as f:
@@ -64,19 +63,21 @@ def interactive_model(
     tf.random.set_seed(seed)
 
     # Create the model
-    gpt2_instance = gpt.create_model(hparams)  # Assuming you have a function to create the model
+    # gpt2_instance = gpt.create_model(hparams)  # Assuming you have a function to create the model
 
-    # Set up the checkpoint manager
-    checkpoint_dir = os.path.join(models_dir, model_name)
-    checkpoint = tf.train.Checkpoint(model=gpt2_instance)
-    ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=5)
+    # # Set up the checkpoint manager
+    # checkpoint_dir = os.path.join(models_dir, model_name)
+    # checkpoint = tf.train.Checkpoint(model=gpt2_instance)
+    # ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=5)
 
-    # Restore the latest checkpoint
-    if ckpt_manager.latest_checkpoint:
-        checkpoint.restore(ckpt_manager.latest_checkpoint).expect_partial()
-        print(f"Model restored from {ckpt_manager.latest_checkpoint}")
-    else:
-        print("Initializing model...")
+    # # Restore the latest checkpoint
+    # if ckpt_manager.latest_checkpoint:
+    #     checkpoint.restore(ckpt_manager.latest_checkpoint).expect_partial()
+    #     print(f"Model restored from {ckpt_manager.latest_checkpoint}")
+    # else:
+    #     print("Initializing model...")
+
+    print("Initializing model...")
 
     # Interactive prompt loop
     while True:
@@ -91,14 +92,16 @@ def interactive_model(
         generated = 0
 
         for _ in range(nsamples // batch_size):
-            output = gpt.submit_query(context = context_tokens_tensor, length = tokens_length, batch_size = batch_size)
-            output = output[:, tokens_length:].numpy()
+            text_output = gpt.submit_query(context = context_tokens_tensor, length = tokens_length, batch_size = batch_size)
+            generated += 1
+            print("=" * 40 + " EXAMPLE " + str(generated) + " " + "=" * 40)
+            print(text_output)
             
-            for i in range(batch_size):
-                generated += 1
-                text = enc.decode(output[i])
-                print("=" * 40 + " SAMPLE " + str(generated) + " " + "=" * 40)
-                print(text)
+            #for i in range(batch_size):
+                #generated += 1
+                #text = enc.decode(output[i])
+                #print("=" * 40 + " SAMPLE " + str(generated) + " " + "=" * 40)
+                #print(text)
         
         print("=" * 80)
 
