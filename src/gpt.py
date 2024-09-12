@@ -133,7 +133,7 @@ def submit_query(
 
         return text_completion
 """
-class GPT2Model(tf.keras):
+class GPT2Model(tf.keras.Model):
     def __init__(self, hparams):
         super(GPT2Model, self).__init__()
         # Initialize your model layers here based on hparams
