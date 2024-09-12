@@ -1,4 +1,4 @@
-"""Public Interface to the Core GPT model"""
+"""Public interface to the Core GPT model"""
 
 import tensorflow as tf
 import gpt_core_v2
@@ -23,6 +23,10 @@ def top_k_logits(logits, k):
        lambda: logits,
        lambda: _top_k(),
     )
+
+def get_encoder(model_name, models_dir):
+    """extend the codec encoder"""
+    return codec.get_encoder(model_name, models_dir)
 
 def default_hparams():
     """default hparams"""
@@ -125,11 +129,11 @@ def submit_query(
         )
 
         # Decode the generated output
-        text_completion = codec_instance.decode(tokens[0], skip_special_tokens=True)
+        text_completion = codec_instance.decode(tokens[0])
 
         return text_completion
-
-class GPT2Model(tf.keras.Model):
+"""
+class GPT2Model(tf.keras):
     def __init__(self, hparams):
         super(GPT2Model, self).__init__()
         # Initialize your model layers here based on hparams
@@ -158,3 +162,4 @@ class TransformerBlock(tf.keras.layers.Layer):
 
 def create_model(hparams):
     return GPT2Model(hparams)
+"""
