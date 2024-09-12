@@ -2,8 +2,8 @@
 
 import os
 import json
-import regex as re
 from functools import lru_cache
+import regex as re
 
 @lru_cache()
 def bytes_to_unicode():
@@ -73,7 +73,7 @@ class Encoder:
                     j = word.index(first, i)
                     new_word.extend(word[i:j])
                     i = j
-                except:
+                except Exception:
                     new_word.extend(word[i:])
                     break
 
