@@ -5,9 +5,11 @@ import json
 import os
 import numpy as np
 import tensorflow as tf
-import gpt_core_v2, gpt, codec
+import gpt_core_v2
+import gpt
+import codec
 
-def sample_model(
+def generative_example(
     model_name='124M',
     seed=None,
     nsamples=0,
@@ -42,19 +44,19 @@ def sample_model(
     models_dir = os.path.expanduser(os.path.expandvars(models_dir))
     enc = codec.get_encoder(model_name, models_dir)
     hparams = gpt_core_v2.default_hparams()
-    with open(os.path.join(models_dir, model_name, 'hparams.json')) as f:
+    with open(os.path.join(models_dir, model_name, 'hparams.json'), encoding="UTF-8") as f:
         hparams.override_from_dict(json.load(f))
 
     if length is None:
         length = hparams.n_ctx
     elif length > hparams.n_ctx:
-        raise ValueError("Can't get samples longer than window size: %s" % hparams.n_ctx)
+        raise ValueError(f"Can't get samples longer than window size:{hparams.n_ctx}")
 
     with tf.compat.v1.Session(graph=tf.Graph()) as sess:
         np.random.seed(seed)
         tf.compat.v1.set_random_seed(seed)
 
-        output = gpt.sample_sequence(
+        output = gpt.submit_query(
             hparams=hparams, length=length,
             start_token=enc.encoder['<|endoftext|>'],
             batch_size=batch_size,
@@ -75,4 +77,4 @@ def sample_model(
                 print(text)
 
 if __name__ == '__main__':
-    fire.Fire(sample_model)
+    fire.Fire(generative_example)
