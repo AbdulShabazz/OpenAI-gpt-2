@@ -5,9 +5,7 @@ import os
 import fire
 import numpy as np
 import tensorflow as tf
-import gpt_core_v2
 import gpt
-import codec
 
 def generative_example(
     model_name='124M',
@@ -18,7 +16,7 @@ def generative_example(
     temperature=1,
     top_k=0,
     top_p=1,
-    models_dir='../models',
+    models_dir='../models'
 ):
     """
     Run the sample_model
@@ -42,8 +40,8 @@ def generative_example(
      (i.e. contains the <model_name> folder)
     """
     models_dir = os.path.expanduser(os.path.expandvars(models_dir))
-    enc = codec.get_encoder(model_name, models_dir)
-    hparams = gpt_core_v2.default_hparams()
+    enc = gpt.get_encoder(model_name, models_dir)
+    hparams = gpt.default_hparams()
     with open(os.path.join(models_dir, model_name, 'hparams.json'), encoding="UTF-8") as f:
         hparams.override_from_dict(json.load(f))
 
