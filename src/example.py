@@ -7,6 +7,6 @@ model_dir = '../models'
 
 prompt = "Hello, how are you today?"
 
-text_completion = gpt.sample_sequence(model_name=model_name, model_dir=model_dir, context=prompt, length=50)
+text_completion = gpt.submit_query(model_name=model_name, model_dir=model_dir, context=prompt, length=50)
 
 print("Generated text:", text_completion)
