@@ -4,3 +4,6 @@ requests==2.21.0
 tqdm==4.31.1
 tensorflow>=2.16
 torch>=2.3
+aiohttp
+aiofiles
+asyncio
