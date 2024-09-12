@@ -20,17 +20,32 @@ except ImportError:
 try:
     import requests
 except ImportError:
-    install("requests") # pip install requests
+    install("requests")
 
 try:
     from tqdm import tqdm
 except ImportError:
-    install("tqdm") # pip install tqdm
+    install("tqdm")
 
 try:
     import tensorflow as tf
 except ImportError:
     install("tensorflow")
+
+try:
+    import aiohttp
+except ImportError:
+    install("aiohttp")
+
+try:
+    import aiofiles
+except ImportError:
+    install("aofiles")
+
+try:
+    import asyncio
+except ImportError:
+    install("asyncio")
 
 try:
    import torch as pytorch
