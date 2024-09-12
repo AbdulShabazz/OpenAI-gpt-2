@@ -11,7 +11,7 @@ import tensorflow as tf
 import codec
 import gpt
 
-def interact_model(
+def interactive_model(
     model_name='124M',
     seed=None,
     nsamples=1,
@@ -104,4 +104,4 @@ def interact_model(
 
 
 if __name__ == '__main__':
-    fire.Fire(interact_model)
+    fire.Fire(interactive_model)
