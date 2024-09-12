@@ -1,8 +1,11 @@
+"""Public Interface to the Core GPT model"""
+
 import tensorflow as tf
 import gpt_core_v2
 import codec
 
 def top_k_logits(logits, k):
+    """top k logits"""
     if k == 0:
         # no truncation
         return logits
@@ -22,6 +25,7 @@ def top_k_logits(logits, k):
     )
 
 def default_hparams():
+    """default hparams"""
     return gpt_core_v2.default_hparams()
 
 def top_p_logits(logits, p):
@@ -41,8 +45,8 @@ def top_p_logits(logits, p):
         logits,
     )
 
+@tf.function
 def submit_query(
-    *,
     hparams=gpt_core_v2.default_hparams(),
     length=50,
     model_name='124M',
@@ -54,7 +58,10 @@ def submit_query(
     top_k=0,
     top_p=1
 ):
+    """submit a query to the model"""
+
     codec_instance = codec.get_encoder(model_name,model_dir)
+
     context = codec_instance.encode(context) # [15496, 11, 703, 389, 345, 1909, 30]
     if start_token is None:
         assert context is not None, 'Specify exactly one of start_token and context!'
@@ -73,7 +80,7 @@ def submit_query(
     length = determine_length(provided_length=length, max_length=hparams.n_ctx)
 
     def step(hparams, tokens, past=None):
-        lm_output = gpt_core_v2.model(hparams=hparams, X=tokens, past=past, reuse=tf.compat.v1.AUTO_REUSE)
+        lm_output = gpt_core_v2.model(hparams=hparams, X=tokens, past=past, reuse=True)
 
         logits = lm_output['logits'][:, :, :hparams.n_vocab]
         presents = lm_output['present']
@@ -86,10 +93,10 @@ def submit_query(
     with tf.name_scope('sample_sequence'):
         def body(past, prev, output):
             next_outputs = step(hparams, prev, past=past)
-            logits = next_outputs['logits'][:, -1, :] / tf.to_float(temperature)
+            logits = next_outputs['logits'][:, -1, :] / tf.compat.v1.to_float(temperature)
             logits = top_k_logits(logits, k=top_k)
             logits = top_p_logits(logits, p=top_p)
-            samples = tf.multinomial(logits, num_samples=1, output_dtype=tf.int32)
+            samples = tf.compat.v1.multinomial(logits, num_samples=1, output_dtype=tf.int32)
             return [
                 next_outputs['presents'] if past is None else tf.concat([past, next_outputs['presents']], axis=-2),
                 samples,
@@ -121,25 +128,6 @@ def submit_query(
         text_completion = codec_instance.decode(tokens[0], skip_special_tokens=True)
 
         return text_completion
-
-def encode_input(raw_text, batch_size):
-    context_tokens = enc.encode(raw_text)
-    return tf.convert_to_tensor([context_tokens] * batch_size, dtype=tf.int32), len(context_tokens)
-
-def decode_output(output):
-    return enc.decode(output)
-
-@tf.function
-def submit_query(context):
-    # Your existing submit_query implementation goes here
-    pass
-
-def generate_sample(context_tokens_tensor, context_length):
-    output = submit_query(context=context_tokens_tensor)
-    output = output[:, context_length:].numpy()
-    return decode_output(output[0])
-
-def get_token_length(text):
 
 class GPT2Model(tf.keras.Model):
     def __init__(self, hparams):
