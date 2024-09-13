@@ -1,88 +1,87 @@
-# GPT-2
+# GPT-2: Language Models as Unsupervised Multitask Learners
 
-(This repository updates the gpt-2 codebase to tensorflow v2.17.0.)
+## Overview
 
-Code and models from the paper ["Language Models are Unsupervised Multitask Learners"](https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf).
+This repository contains an updated implementation of the GPT-2 model, refactored for TensorFlow v2.17.0. It is based on the research presented in ["Language Models are Unsupervised Multitask Learners"](https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf).
 
-You can read about GPT-2 and its staged release in our [original blog post](https://openai.com/research/better-language-models/), [6 month follow-up post](https://openai.com/blog/gpt-2-6-month-follow-up/), and [final post](https://www.openai.com/blog/gpt-2-1-5b-release/).
+For comprehensive information about GPT-2 and its staged release, please refer to:
+- [Original blog post](https://openai.com/research/better-language-models/)
+- [6-month follow-up post](https://openai.com/blog/gpt-2-6-month-follow-up/)
+- [Final release post](https://www.openai.com/blog/gpt-2-1-5b-release/)
 
-We have also [released a dataset](https://github.com/openai/gpt-2-output-dataset) for researchers to study their behaviors.
-
-This repository contains the refactored implementation of a GPT-2 model in Python. The project has been organized into multiple files, each serving a distinct purpose to streamline both model functionality and API interaction.
-
-<sup>*</sup> *Note that our original parameter counts were wrong due to an error (in our previous blog posts and paper).  Thus you may have seen small referred to as 117M and medium referred to as 345M.*
+Additionally, a [dataset](https://github.com/openai/gpt-2-output-dataset) has been released for researchers to study the model's behaviors.
 
 ## Project Structure
 
-### 1. `gpt.py`
-   - **Purpose**: 
-     This file houses the basic GPT-2 model logic. It handles tasks like loading pre-trained models, training new models, fine-tuning on datasets, saving/loading models from disk, and managing model parameters.
-   - **Key Functions**:
-     - `load_model()`: Loads the GPT-2 model.
-     - `train_model()`: Trains or fine-tunes the GPT-2 model on a given dataset.
-     - `save_model()`: Saves the trained model for later use.
-     - `query_model(prompt)`: Takes in a user-provided text prompt and returns a text completion from the GPT-2 model.
+The repository is organized into multiple files, each serving a specific purpose:
 
-### 2. `gpt_core_v2.py`
-   - **Purpose**:
-     This file contains all the APIs that define the GPT's architecture. Any updates to the APIs in this file will reflect updates to how the new GPT model can be accessed.
-   - **Key Functions**:
-     - `train_via_api()`: An API endpoint that allows training the GPT-2 model through external calls.
-     - `save_model_via_api()`: An API endpoint to save the current state of the model through external calls.
+1. **gpt.py**
+   - Core GPT-2 model logic
+   - Key functions:
+     ```python
+     load_model()  # Loads the GPT-2 model
+     train_model()  # Trains or fine-tunes the GPT-2 model on a given dataset
+     save_model()  # Saves the trained model for later use
+     query_model(prompt)  # Takes a user-provided text prompt and returns a completion
+     ```
 
-### 3. `codec.py`
-   - **Purpose**:
-     This file contains the encoder and decoder modules, responsible for parsing prompts into tokenized formats and converting model outputs back into human-readable text.
-   - **Key Functions**:
-     - `encode(text)`: Converts text into tokenized input to be fed to the model.
-     - `decode(tokens)`: Converts tokenized output from the model into readable text.
+2. **gpt_core_v2.py**
+   - API definitions for GPT architecture
+   - Key functions:
+     ```python
+     train_via_api()  # API endpoint for training the GPT-2 model through external calls
+     save_model_via_api()  # API endpoint to save the current model state through external calls
+     ```
 
-### 4. `example.py`
-   - **Purpose**:
-     This file is an example script to demonstrate how to interact with the GPT-2 model using the basic APIs from the `gpt.py` module. It shows sample queries and potential use cases.
-   - **Key Functions**:
-     - Example use of `query_model()` to generate text completions.
-     - Sample inputs and outputs from the GPT-2 model.
+3. **codec.py**
+   - Encoder and decoder modules
+   - Key functions:
+     ```python
+     encode(text)  # Converts text into tokenized input for the model
+     decode(tokens)  # Converts tokenized output from the model into readable text
+     ```
 
-## Usage
+4. **example.py**
+   - Demonstration script for model interaction
+   - Contains:
+     ```python
+     # Example usage of query_model() to generate text completions
+     # Sample inputs and outputs from the GPT-2 model
+     ```
 
-This repository is meant to be a starting point for researchers and engineers to experiment with GPT-2.
+## Usage Guidelines
 
-For basic information, see our [model card](./model_card.md).
+This repository serves as a starting point for researchers and engineers to experiment with GPT-2. Please refer to our [model card](./model_card.md) for basic information.
 
-- To update the GPT-2 model aka its APIs, use the endpoints defined in `gpt_core_v2.py`.
-- To load or train the model, refer to the functions in `gpt.py`.
-- For encoding/decoding tasks, utilize the helper functions in `codec.py`.
-- Refer to `example.py` for a basic demonstration for how to query the model.
+- Model updates: Utilize endpoints in `gpt_core_v2.py`
+- Model loading/training: Use functions in `gpt.py`
+- Encoding/decoding: Employ helper functions in `codec.py`
+- Basic querying: See `example.py` for demonstration
 
-## Future Updates
+## Important Considerations
 
-- `gpt.py` and the APIs in `gpt_core_v2.py` will be updated as needed to reflect the latest achitecture and or interaction methods for the GPT-2 model.
-- Future versions of the API file will follow a similar naming convention (e.g., `gpt_core_vW.X.Y.Z.py` for subsequent updates).
-### Some caveats
+1. **Robustness**: GPT-2 models' worst-case behaviors are not fully understood. Evaluate carefully for your use case, especially in safety-critical applications.
+2. **Bias**: The training dataset contains texts with biases and inaccuracies. GPT-2 models may reflect these issues.
+3. **Synthetic Text Labeling**: To prevent misidentification, clearly label model-generated samples as synthetic before wide dissemination.
 
-- GPT-2 models' robustness and worst case behaviors are not well-understood.  As with any machine-learned model, carefully evaluate GPT-2 for your use case, especially if used without fine-tuning or in safety-critical applications where reliability is important.
-- The dataset our GPT-2 models were trained on contains many texts with [biases](https://twitter.com/TomerUllman/status/1101485289720242177) and factual inaccuracies, and thus GPT-2 models are likely to be biased and inaccurate as well.
-- To avoid having samples mistaken as human-written, we recommend clearly labeling samples as synthetic before wide dissemination.  Our models are often incoherent or inaccurate in subtle ways, which takes more than a quick read for a human to notice.
+## Research Collaboration
 
-### Work with us
+We welcome collaboration on interesting research or applications of GPT-2. We are particularly interested in:
+- Studying potential misuse cases and developing defenses
+- Investigating and mitigating problematic content (e.g., bias) in model outputs
 
-Please [let us know](mailto:languagequestions@openai.com) if you’re doing interesting research with or working on applications of GPT-2!  We’re especially interested in hearing from and potentially working with those who are studying
-- Potential malicious use cases and defenses against them (e.g. the detectability of synthetic text)
-- The extent of problematic content (e.g. bias) being baked into the models and effective mitigations
+Please contact us at [languagequestions@openai.com](mailto:languagequestions@openai.com) for inquiries or collaborations.
 
-## Development
+## Development and Contributions
 
-See [DEVELOPERS.md](./DEVELOPERS.md)
-
-## Contributors
-
-See [CONTRIBUTORS.md](./CONTRIBUTORS.md)
+- For development guidelines, see [DEVELOPERS.md](./DEVELOPERS.md)
+- For a list of contributors, see [CONTRIBUTORS.md](./CONTRIBUTORS.md)
 
 ## Citation
 
-Please use the following bibtex entry:
-```
+Please use the following BibTeX entry:
+
+```bibtex
 @article{radford2019language,
   title={Language Models are Unsupervised Multitask Learners},
   author={Radford, Alec and Wu, Jeff and Child, Rewon and Luan, David and Amodei, Dario and Sutskever, Ilya},
@@ -90,12 +89,11 @@ Please use the following bibtex entry:
 }
 ```
 
-## Future work
+## Future Work
 
-We may release code for evaluating the models on various benchmarks.
-
-We are still considering release of the larger models.
+- Potential release of code for model evaluation on various benchmarks
+- Considering the release of larger models
 
 ## License
 
-[Modified MIT](./LICENSE)
+This project is licensed under the [Modified MIT License](./LICENSE).
