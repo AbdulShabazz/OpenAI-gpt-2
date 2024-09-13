@@ -1,57 +1,26 @@
 import os
 import sys
 
-try:
-    import fire
-except ImportError:
-    print('Error [fire] module not installed. Please run download_model_prereqs.py to install [fire]')    
-    sys.exit(1)
+modules_to_import = [
+    ('fire', 'fire'),
+    ('regex', 're'),
+    ('aiohttp', 'aiohttp'),
+    ('aiofiles', 'aiofiles'),
+    ('asyncio', 'asyncio'),
+    ('torch', 'pytorch'),
+    ('requests', 'requests'),
+    ('tqdm', 'tqdm', 'from tqdm import tqdm')
+]
 
-try:
-    import regex as re
-except ImportError:
-    print('Error [regex] module not installed. Please run download_model_prereqs.py to install [regex]')    
-    sys.exit(1)
-    
-try:
-    import aiohttp
-except ImportError:
-    print('Error [aiohttp] module not installed. Please run download_model_prereqs.py to install [aiohttp]')    
-    sys.exit(1)
-
-try:
-    import aiofiles
-except ImportError:
-    print('Error [aiofiles] module not installed. Please run download_model_prereqs.py to install [aiofiles]')    
-    sys.exit(1)
-
-try:
-    import asyncio
-except ImportError:
-    print('Error [asyncio] module not installed. Please run download_model_prereqs.py to install [asyncio]')    
-    sys.exit(1)
-
-try:
-   import torch as pytorch
-except ImportError:
-    print('Error [torch] module not installed. Please run download_model_prereqs.py to install [torch]')    
-    sys.exit(1)
-
-try:
-    import requests
-except ImportError:
-    print('Error [requests] module not installed. Please run download_model_prereqs.py to install [requests]')
-    sys.exit(1)
-
-try:
-    from tqdm import tqdm
-except ImportError:
-    print('Error [tqdm] module not installed. Please run download_model_prereqs.py to install [tqdm]')
-    sys.exit(1)
-
-if len(sys.argv) != 2:
-    print('You must enter the model name as a parameter, e.g.: download_model.py 124M')
-    sys.exit(1)
+for module in modules_to_import:
+    try:
+        if len(module) == 3:
+            exec(module[2])
+        else:
+            exec(f"import {module[0]} as {module[1]}")
+    except ImportError:
+        print(f"Error [{module[0]}] module not installed. Please run download_model_prereqs.py to install [{module[0]}]")
+        sys.exit(1)
 
 model = sys.argv[1]
 
