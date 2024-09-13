@@ -35,7 +35,7 @@ This repository contains the refactored implementation of a GPT-2 model in Pytho
      This file contains the encoder and decoder modules, responsible for parsing prompts into tokenized formats and converting model outputs back into human-readable text.
    - **Key Functions**:
      - `encode(text)`: Converts text into tokenized input to be fed to the model.
-     - `decode(tokens)`: Converts tokenized output from the model back into readable text.
+     - `decode(tokens)`: Converts tokenized output from the model into readable text.
 
 ### 4. `example.py`
    - **Purpose**:
