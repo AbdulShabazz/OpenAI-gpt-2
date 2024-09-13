@@ -16,8 +16,8 @@ def interactive_model(
     batch_size=1,
     length=None,
     temperature=1,
-    top_k=0,
-    top_p=1,    
+    top_k=1, # [0, K], How many logits (tokens) to consider during sampling, where K is sample size.
+    top_p=1, # [0.00, 1.00], Percentage of high probability tokens to consider.
     models_dir='models'
 ):
     """
