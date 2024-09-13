@@ -1,9 +1,9 @@
-fire>=0.1.3
+fire
 regex==2017.4.5
 requests==2.21.0
 tqdm==4.31.1
-tensorflow>=2.16
-torch>=2.3
+tensorflow
+torch
 aiohttp
 aiofiles
 asyncio
