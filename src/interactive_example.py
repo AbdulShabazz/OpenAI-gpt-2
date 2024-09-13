@@ -17,8 +17,8 @@ def interactive_model(
     length=None,
     temperature=1,
     top_k=0,
-    top_p=1,
-    models_dir='../models'
+    top_p=1,    
+    models_dir='models'
 ):
     """
     Interactively run the model
