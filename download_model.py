@@ -2,6 +2,18 @@ import os
 import sys
 
 try:
+    import fire
+except ImportError:
+    print('Error [fire] module not installed. Please run download_model_prereqs.py to install [fire]')    
+    sys.exit(1)
+
+try:
+    import regex as re
+except ImportError:
+    print('Error [regex] module not installed. Please run download_model_prereqs.py to install [regex]')    
+    sys.exit(1)
+    
+try:
     import aiohttp
 except ImportError:
     print('Error [aiohttp] module not installed. Please run download_model_prereqs.py to install [aiohttp]')    
