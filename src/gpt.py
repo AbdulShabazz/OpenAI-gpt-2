@@ -54,7 +54,7 @@ def submit_query(
     hparams=gpt_core_v2.default_hparams(),
     length=50,
     model_name='124M',
-    model_dir='models',
+    models_dir='models',
     start_token=None,
     batch_size=None,
     context="Hello, how are you today?",
@@ -64,7 +64,7 @@ def submit_query(
 ):
     """submit a query to the model"""
 
-    codec_instance = codec.get_encoder(model_name,model_dir)
+    codec_instance = codec.get_encoder(model_name, models_dir)
 
     context = codec_instance.encode(context) # [15496, 11, 703, 389, 345, 1909, 30]
     if start_token is None:
