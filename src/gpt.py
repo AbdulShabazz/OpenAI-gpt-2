@@ -54,7 +54,7 @@ def submit_query(
     hparams=gpt_core_v2.default_hparams(),
     length=50,
     model_name='124M',
-    model_dir='../models',
+    model_dir='models',
     start_token=None,
     batch_size=None,
     context="Hello, how are you today?",
