@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains an updated implementation of the GPT-2 model, refactored for TensorFlow v2.17.0. It is based on the research presented in ["Language Models are Unsupervised Multitask Learners"](https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf).
+This repository contains an updated implementation of the GPT-2 model, **refactored for TensorFlow v2.17.0**. It is based on the research presented in ["Language Models are Unsupervised Multitask Learners"](https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf).
 
 For comprehensive information about GPT-2 and its staged release, please refer to:
 - [Original blog post](https://openai.com/research/better-language-models/)
