@@ -2,7 +2,6 @@
 
 """interactive GPT prompt environment"""
 
-import json
 import os
 import fire
 import numpy as np
@@ -11,14 +10,14 @@ import gpt
 
 def interactive_model(
     model_name='124M',
-    models_dir='models',
     seed=None,
     nsamples=1,
     batch_size=1,
     length=None,
     temperature=1,
     top_k=1, # [0, K], How many logits (tokens) to consider during sampling, where K is sample size.
-    top_p=1 # [0.00, 1.00], Percentage of high probability tokens to consider.
+    top_p=1, # [0.00, 1.00], Percentage of high probability tokens to consider.
+    models_dir='models'
 ):
     """
     Interactively run the model
@@ -40,21 +39,18 @@ def interactive_model(
      :models_dir : path to parent folder containing model subfolders
      (i.e. contains the <model_name> folder)
     """
-    models_dir = os.path.expanduser(os.path.expandvars(models_dir))
+
     if batch_size is None:
         batch_size = 1
     assert nsamples % batch_size == 0
 
-    enc = gpt.get_encoder(model_name, models_dir)
-    
-    hparams = gpt.default_hparams()
-    with open(os.path.join(models_dir, model_name, 'hparams.json'), encoding="UTF-8") as f:
-        hparams.override_from_dict(json.load(f))
+    # gpt_codec = gpt.get_codec(model_name, models_dir)
+    # hparams = gpt.get_default_hparams(model_name, models_dir, 'hparams.json')
 
-    if length is None:
-        length = hparams.n_ctx // 2
-    elif length > hparams.n_ctx:
-        raise ValueError(f"Can't capture samples longer than window size: {hparams.n_ctx}")
+    # if length is None:
+    #     length = hparams.n_ctx // 2
+    # elif length > hparams.n_ctx:
+    #     raise ValueError(f"Can't capture samples wider than the window size: {hparams.n_ctx}")
 
     # Set up the seed for reproducibility
     seed = 42  # Or whatever seed value you were using before
@@ -80,27 +76,24 @@ def interactive_model(
 
     # Interactive prompt loop
     while True:
-        raw_text = input("Model prompt >>> ")
+        raw_text = input("Model prompt >>> ") # "Hello, how are you ?"
         while not raw_text:
             print('Please supply a text Prompt to the model!')
             raw_text = input("Model prompt >>> ")
-        
-        context_tokens = enc.encode(raw_text)
-        tokens_length = len(context_tokens)
-        #context_tokens_tensor = tf.convert_to_tensor([context_tokens] * batch_size, dtype=tf.int32)    
+           
         generated = 0
 
         for _ in range(nsamples // batch_size):
-            text_output = gpt.submit_query(context = context_tokens, length = tokens_length, batch_size = batch_size, models_name = models_name, model_dir = model_dir)
-            generated += 1
-            print("=" * 40 + " EXAMPLE " + str(generated) + " " + "=" * 40)
-            print(text_output)
+            text_output = gpt.submit_text_query(
+                context = raw_text,
+                length = length,
+                batch_size = batch_size,
+                models_dir = models_dir,
+                model_name = model_name )
             
-            #for i in range(batch_size):
-                #generated += 1
-                #text = enc.decode(output[i])
-                #print("=" * 40 + " SAMPLE " + str(generated) + " " + "=" * 40)
-                #print(text)
+            generated += 1
+            print("=" * 40 + " COMPLETION " + str(generated) + " " + "=" * 40)
+            print(text_output)
         
         print("=" * 80)
 
