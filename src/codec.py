@@ -106,7 +106,8 @@ class Encoder:
         return text
 
 def get_encoder(model_name, models_dir):
-    with open(os.path.join(models_dir, model_name, 'encoder.json'), 'r') as f:
+    models_dir = os.path.expanduser(os.path.expandvars(models_dir))
+    with open(os.path.join(models_dir, model_name, 'encoder.json'), 'r', encoding="utf-8") as f:
         encoder = json.load(f)
     with open(os.path.join(models_dir, model_name, 'vocab.bpe'), 'r', encoding="utf-8") as f:
         bpe_data = f.read()
