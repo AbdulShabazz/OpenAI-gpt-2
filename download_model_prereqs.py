@@ -7,52 +7,28 @@ def install(package):
 
 print('Installing missing packages...')
 
-try:
-    import fire
-except ImportError:
-    install("fire")
+modules_to_import = [
+    ('fire', 'fire'),
+    ('regex', 're'),
+    ('aiohttp', 'aiohttp'),
+    ('aiofiles', 'aiofiles'),
+    ('asyncio', 'asyncio'),
+    ('torch', 'pytorch'),
+    ('requests', 'requests'),
+    ('tqdm', 'tqdm', 'from tqdm import tqdm')
+]
 
-try:
-    import regex as re
-except ImportError:
-    install("regex")
-
-try:
-    import requests
-except ImportError:
-    install("requests")
-
-try:
-    from tqdm import tqdm
-except ImportError:
-    install("tqdm")
-
-try:
-    import tensorflow as tf
-except ImportError:
-    install("tensorflow")
-
-try:
-    import aiohttp
-except ImportError:
-    install("aiohttp")
-
-try:
-    import aiofiles
-except ImportError:
-    install("aiofiles")
-
-try:
-    import asyncio
-except ImportError:
-    install("asyncio")
-
-try:
-   import torch as pytorch
-except ImportError:
-   install("torch") # pip install torch
-   #install("torchvision") # pip install torchvision 
-   #install("torchaudio") # pip install torchaudio
-   print('***INFO***: the [torch] module also requires some additional DLLs which can be downloaded with Powershell: curl -o vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe')
+for module in modules_to_import:
+    try:
+        if len(module) == 3:
+            exec(module[2])
+        else:
+            exec(f"import {module[0]} as {module[1]}")
+    except ImportError:
+        install(module[0])
+        #install("torchvision") # pip install torchvision 
+        #install("torchaudio") # pip install torchaudio
+        if module[0] == "torch":
+            print('***INFO***: the [torch] module also requires some additional DLLs which can be downloaded with Powershell: curl -o vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe')
 
 print("\nDownloads Complete!")
