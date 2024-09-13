@@ -40,7 +40,7 @@ except ImportError:
 try:
     import aiofiles
 except ImportError:
-    install("aofiles")
+    install("aiofiles")
 
 try:
     import asyncio
