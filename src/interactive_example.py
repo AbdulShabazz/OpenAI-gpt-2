@@ -11,14 +11,14 @@ import gpt
 
 def interactive_model(
     model_name='124M',
+    models_dir='models',
     seed=None,
     nsamples=1,
     batch_size=1,
     length=None,
     temperature=1,
     top_k=1, # [0, K], How many logits (tokens) to consider during sampling, where K is sample size.
-    top_p=1, # [0.00, 1.00], Percentage of high probability tokens to consider.
-    models_dir='models'
+    top_p=1 # [0.00, 1.00], Percentage of high probability tokens to consider.
 ):
     """
     Interactively run the model
@@ -91,7 +91,7 @@ def interactive_model(
         generated = 0
 
         for _ in range(nsamples // batch_size):
-            text_output = gpt.submit_query(context = context_tokens, length = tokens_length, batch_size = batch_size)
+            text_output = gpt.submit_query(context = context_tokens, length = tokens_length, batch_size = batch_size, models_name = models_name, model_dir = model_dir)
             generated += 1
             print("=" * 40 + " EXAMPLE " + str(generated) + " " + "=" * 40)
             print(text_output)
