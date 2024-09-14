@@ -4,8 +4,8 @@
 
 import os
 import fire
-import numpy as np
-import tensorflow as tf
+#import numpy as np
+#import tensorflow as tf
 import gpt
 
 def interactive_model(
@@ -15,9 +15,9 @@ def interactive_model(
     batch_size=1,
     length=None,
     temperature=1,
-    top_k=1, # [0, K], How many logits (tokens) to consider during sampling, where K is sample size.
-    top_p=1, # [0.00, 1.00], Percentage of high probability tokens to consider.
-    models_dir='models'
+    top_k=1,
+    top_p=1,
+    models_dir='../models' # Adjust as needed during DEBUG mode
 ):
     """
     Interactively run the model
@@ -40,9 +40,9 @@ def interactive_model(
      (i.e. contains the <model_name> folder)
     """
 
-    if batch_size is None:
-        batch_size = 1
-    assert nsamples % batch_size == 0
+    # if batch_size is None:
+    #     batch_size = 1
+    # assert nsamples % batch_size == 0
 
     # gpt_codec = gpt.get_codec(model_name, models_dir)
     # hparams = gpt.get_default_hparams(model_name, models_dir, 'hparams.json')
@@ -54,8 +54,8 @@ def interactive_model(
 
     # Set up the seed for reproducibility
     seed = 42  # Or whatever seed value you were using before
-    np.random.seed(seed)
-    tf.random.set_seed(seed)
+    # np.random.seed(seed)
+    # tf.random.set_seed(seed)
 
     # Create the model
     # gpt2_instance = gpt.create_model(hparams)  # Assuming you have a function to create the model
@@ -80,20 +80,19 @@ def interactive_model(
         while not raw_text:
             print('Please supply a text Prompt to the model!')
             raw_text = input("Model prompt >>> ")
-           
-        generated = 0
 
-        for _ in range(nsamples // batch_size):
+        for i in range(nsamples):
             text_output = gpt.submit_text_query(
                 context = raw_text,
                 length = length,
-                batch_size = batch_size,
+                batch_size = None,
                 models_dir = models_dir,
-                model_name = model_name )
+                model_name = model_name,
+                seed=seed )
             
-            generated += 1
-            print("=" * 40 + " COMPLETION " + str(generated) + " " + "=" * 40)
-            print(text_output)
+            print("=" * 40 + f" COMPLETION {i} " + "=" * 40)
+            for _, text in enumerate(text_output):
+                print(text)
         
         print("=" * 80)
 
