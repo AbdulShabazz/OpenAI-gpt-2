@@ -6,6 +6,7 @@ import tensorflow as tf
 import gpt_core_v2
 import codec
 
+@tf.function
 def top_k_logits(logits, k):
     """top k logits"""
     if k == 0:
@@ -13,7 +14,7 @@ def top_k_logits(logits, k):
         return logits
 
     def _top_k():
-        values, _ = tf.nn.top_k(logits, k=k)
+        values, _ = tf.math.top_k(logits, k=k)
         min_values = values[:, -1, tf.newaxis]
         return tf.where(
             logits < min_values,
@@ -21,9 +22,9 @@ def top_k_logits(logits, k):
             logits,
         )
     return tf.cond(
-    tf.equal(k, 0),
-    lambda: logits,
-    lambda: _top_k(),
+        tf.equal(k, 0),
+        lambda: logits,
+        lambda: _top_k(),
     )
 
 def get_codec(model_name, models_dir):
@@ -41,9 +42,10 @@ def get_default_hparams(model_name, models_dir, fn):
         pass
     return hparams
 
+@tf.function
 def top_p_logits(logits, p):
     """Nucleus sampling"""
-    batch, _ = logits.shape.as_list()
+    batch = tf.shape(logits)[0]
     sorted_logits = tf.sort(logits, direction='DESCENDING', axis=-1)
     cumulative_probs = tf.cumsum(tf.nn.softmax(sorted_logits, axis=-1), axis=-1)
     indices = tf.stack([
@@ -53,7 +55,7 @@ def top_p_logits(logits, p):
     ], axis=-1)
     min_values = tf.gather_nd(sorted_logits, indices)
     return tf.where(
-        logits < min_values,
+        logits < min_values[:, tf.newaxis],
         tf.ones_like(logits) * -1e10,
         logits,
     )
@@ -102,7 +104,7 @@ def submit_text_query(
 
     return text_response
 
-#@tf.function
+@tf.function
 def submit_token_query(
     hparams=gpt_core_v2.default_hparams(),
     length=50,
@@ -139,7 +141,7 @@ def submit_token_query(
     length = determine_length(provided_length=length, max_length=hparams.n_ctx)
 
     def step(hparams, tokens, past=None):
-        lm_output = gpt_core_v2.model(hparams=hparams, input_tokens=tokens, past=past, reuse=True)
+        lm_output = gpt_core_v2.model(hparams=hparams, input_tokens=tokens, past=past)
 
         logits = lm_output['logits'][:, :, :hparams.n_vocab]
         presents = lm_output['present']
@@ -149,41 +151,40 @@ def submit_token_query(
             'presents': presents,
         }
 
-    with tf.name_scope('sample_sequence'):
-        def body(past, prev, output):
-            next_outputs = step(hparams, prev, past=past)
-            logits = next_outputs['logits'][:, -1, :] / tf.compat.v1.to_float(temperature)
-            logits = top_k_logits(logits, k=top_k)
-            logits = top_p_logits(logits, p=top_p)
-            samples = tf.compat.v1.multinomial(logits, num_samples=1, output_dtype=tf.int32)
-            return [
-                next_outputs['presents'] if past is None else tf.concat([past, next_outputs['presents']], axis=-2),
-                samples,
-                tf.concat([output, samples], axis=1)
-            ]
+    def body(past, prev, output):
+        next_outputs = step(hparams, prev, past=past)
+        logits = next_outputs['logits'][:, -1, :] / tf.cast(temperature, tf.float32)
+        logits = top_k_logits(logits, k=top_k)
+        logits = top_p_logits(logits, p=top_p)
+        samples = tf.random.categorical(logits, num_samples=1, dtype=tf.int32)
+        return [
+            next_outputs['presents'] if past is None else tf.concat([past, next_outputs['presents']], axis=-2),
+            samples,
+            tf.concat([output, samples], axis=1)
+        ]
 
-        past, prev, output = body(None, context, context)
+    past, prev, output = body(None, context, context)
 
-        def cond(*args):
-            return True
+    def cond(*args):
+        return True
 
-        _, _, tokens = tf.while_loop(
-            cond=cond, body=body,
-            maximum_iterations=length - 1,
-            loop_vars=[
-                past,
-                prev,
-                output
-            ],
-            shape_invariants=[
-                tf.TensorShape(gpt_core_v2.past_shape(hparams=hparams, batch_size=batch_size)),
-                tf.TensorShape([batch_size, None]),
-                tf.TensorShape([batch_size, None]),
-            ],
-            back_prop=False,
-        )
+    _, _, tokens = tf.while_loop(
+        cond=cond, body=body,
+        maximum_iterations=length - 1,
+        loop_vars=[
+            past,
+            prev,
+            output
+        ],
+        shape_invariants=[
+            tf.TensorShape(gpt_core_v2.past_shape(hparams=hparams, batch_size=batch_size)),
+            tf.TensorShape([batch_size, None]),
+            tf.TensorShape([batch_size, None]),
+        ],
+        back_prop=False,
+    )
 
-        return tokens
+    return tokens
 """
 class GPT2Model(tf.keras.Model):
     def __init__(self, hparams):
