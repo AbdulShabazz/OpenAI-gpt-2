@@ -91,7 +91,7 @@ def softmax(x, axis=-1):
 def gelu(x):
     return tf.nn.gelu(x)
 
-@tf.function
+#@tf.function
 def norm(x, scope, *, axis=-1, epsilon=1e-5):
     """Normalize to mean = 0, std = 1, then do a diagonal affine transform."""
     with tf.name_scope(scope):
@@ -114,7 +114,7 @@ def merge_states(x):
     *start, a, b = shape_list(x)
     return tf.reshape(x, start + [a*b])
 
-@tf.function
+#@tf.function
 def conv1d(x, scope, nf, *, w_init_stdev=0.02):
     with tf.name_scope(scope):
         *start, nx = shape_list(x)
@@ -132,7 +132,7 @@ def attention_mask(nd, ns, *, dtype):
     m = i >= j - ns + nd
     return tf.cast(m, dtype)
 
-@tf.function
+#@tf.function
 def attn(x, scope, n_state, *, past, hparams):
     assert len(x.shape) == 3  # Should be [batch, sequence, features]
     assert n_state % hparams.n_head == 0
@@ -178,7 +178,7 @@ def attn(x, scope, n_state, *, past, hparams):
         a = conv1d(a, 'c_proj', n_state)
         return a, present
 
-@tf.function
+#@tf.function
 def mlp(x, scope, n_state, *, hparams=None):
     with tf.name_scope(scope):
         nx = tf.shape(x)[-1]
@@ -186,7 +186,7 @@ def mlp(x, scope, n_state, *, hparams=None):
         h2 = conv1d(h, 'c_proj', nx)
         return h2
 
-@tf.function
+#@tf.function
 def block(x, scope, *, past, hparams):
     with tf.name_scope(scope):
         nx = tf.shape(x)[-1]
@@ -199,22 +199,27 @@ def block(x, scope, *, past, hparams):
 def past_shape(*, hparams, batch_size=None, sequence=None):
     return [batch_size, hparams.n_layer, 2, hparams.n_head, sequence, hparams.n_embd // hparams.n_head]
 
-@tf.function
+#@tf.function
 def expand_tile(value, size):
     """Add a new axis of given size."""
     value = tf.convert_to_tensor(value, name='value')
     ndims = tf.rank(value)
     return tf.tile(tf.expand_dims(value, axis=0), [size] + [1]*ndims)
 
-@tf.function
+#@tf.function
 def positions_for(tokens, past_length):
     batch_size = tf.shape(tokens)[0]
     nsteps = tf.shape(tokens)[1]
     return expand_tile(past_length + tf.range(nsteps), batch_size)
 
-@tf.function
-def model(hparams, input_tokens, past=None, scope='model', reuse=True):
+#@tf.function
+def model(hparams, input_tokens, past=None, scope='model', reuse=True, seed=None):
     with tf.name_scope(scope):
+        
+        if seed is not None:
+            np.random.seed(seed)
+            tf.random.set_seed(seed)
+
         results = {}
         batch, sequence = shape_list(input_tokens)
 
