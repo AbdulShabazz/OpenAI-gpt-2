@@ -6,7 +6,7 @@ import tensorflow as tf
 import gpt_core_v2
 import codec
 
-@tf.function
+#@tf.function
 def top_k_logits(logits, k):
     """top k logits"""
     if k == 0:
@@ -42,7 +42,7 @@ def get_default_hparams(model_name, models_dir, fn):
         pass
     return hparams
 
-@tf.function
+#@tf.function
 def top_p_logits(logits, p):
     """Nucleus sampling"""
     batch = tf.shape(logits)[0]
@@ -71,18 +71,19 @@ def submit_text_query(
     batch_size=None,
     temperature=1,
     top_k=0,
-    top_p=1):
+    top_p=1,
+    seed=None):
 
     """Submit a text query to the model"""
     codec_instance = codec.get_encoder(model_name, models_dir)
     context_tokens = codec_instance.encode(context) # [15496, 11, 703, 389, 345, 5633]
     tokens_length = len(context_tokens)
-    if length and tokens_length > length:
+    if length is not None and tokens_length > length:
         length = tokens_length
-    context_tokens_tensor = tf.convert_to_tensor([context_tokens] * batch_size, dtype=tf.int32)
+    #context_tokens_tensor = tf.convert_to_tensor([context_tokens] * batch_size, dtype=tf.int32)
     response_tokens = submit_token_query(
         hparams=hparams,
-        context=context_tokens_tensor,
+        context=context_tokens, #context_tokens_tensor,
         length=length,
         model_name=model_name,
         models_dir=models_dir,
@@ -90,7 +91,8 @@ def submit_text_query(
         batch_size=batch_size,
         temperature=temperature,
         top_k=top_k,
-        top_p=top_p)
+        top_p=top_p,
+        seed=seed)
     
     #generated = 0
     #for i in range(batch_size):
@@ -104,7 +106,7 @@ def submit_text_query(
 
     return text_response
 
-@tf.function
+#@tf.function
 def submit_token_query(
     hparams=gpt_core_v2.default_hparams(),
     length=50,
@@ -112,10 +114,11 @@ def submit_token_query(
     models_dir='../models',
     start_token=None,
     batch_size=None,
-    context=[15496, 11, 703, 389, 345, 5633], #"Hello, how are you today?"
+    context=tf.convert_to_tensor([15496, 11, 703, 389, 345, 5633], dtype=tf.int32), #"Hello, how are you today?"
     temperature=1,
     top_k=0,
-    top_p=1
+    top_p=1,
+    seed=None
 ):
     """submit a query to the model"""
 
@@ -126,6 +129,23 @@ def submit_token_query(
 
     if start_token is None:
         assert context is not None, 'Specify exactly one of start_token and context!'
+        # Ensure context is a TensorFlow tensor
+        context = tf.convert_to_tensor(context, dtype=tf.int32)
+        # Check the shape of context
+        context_shape = tf.shape(context)
+        if len(context.shape) == 1:
+            # If context is 1D, reshape it to 2D
+            context = tf.reshape(context, [1, -1])
+        elif len(context.shape) > 2:
+            raise ValueError(f"Context should be 1D or 2D, but got shape {context.shape}")
+        
+        # Set batch_size if it's not provided
+        if batch_size is None:
+            batch_size = context_shape[0]
+        else:
+            # If batch_size is provided, ensure it matches the context
+            tf.debugging.assert_equal(batch_size, context_shape[0], 
+                                      message="Provided batch_size doesn't match context's first dimension")
     else:
         assert context is None, 'Specify exactly one of start_token and context!'
         context = tf.fill([batch_size, 1], start_token)
@@ -141,7 +161,7 @@ def submit_token_query(
     length = determine_length(provided_length=length, max_length=hparams.n_ctx)
 
     def step(hparams, tokens, past=None):
-        lm_output = gpt_core_v2.model(hparams=hparams, input_tokens=tokens, past=past)
+        lm_output = gpt_core_v2.model(hparams=hparams, input_tokens=tokens, past=past, seed=seed)
 
         logits = lm_output['logits'][:, :, :hparams.n_vocab]
         presents = lm_output['present']
