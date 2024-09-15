@@ -12,7 +12,7 @@ def interactive_model(
     model_name='124M',
     seed=None,
     nsamples=1,
-    batch_size=1,
+    batch_size=None,
     length=None,
     temperature=1,
     top_k=1,
@@ -40,37 +40,8 @@ def interactive_model(
      (i.e. contains the <model_name> folder)
     """
 
-    # if batch_size is None:
-    #     batch_size = 1
-    # assert nsamples % batch_size == 0
-
-    # gpt_codec = gpt.get_codec(model_name, models_dir)
-    # hparams = gpt.get_default_hparams(model_name, models_dir, 'hparams.json')
-
-    # if length is None:
-    #     length = hparams.n_ctx // 2
-    # elif length > hparams.n_ctx:
-    #     raise ValueError(f"Can't capture samples wider than the window size: {hparams.n_ctx}")
-
     # Set up the seed for reproducibility
     seed = 42  # Or whatever seed value you were using before
-    # np.random.seed(seed)
-    # tf.random.set_seed(seed)
-
-    # Create the model
-    # gpt2_instance = gpt.create_model(hparams)  # Assuming you have a function to create the model
-
-    # # Set up the checkpoint manager
-    # checkpoint_dir = os.path.join(models_dir, model_name)
-    # checkpoint = tf.train.Checkpoint(model=gpt2_instance)
-    # ckpt_manager = tf.train.CheckpointManager(checkpoint, checkpoint_dir, max_to_keep=5)
-
-    # # Restore the latest checkpoint
-    # if ckpt_manager.latest_checkpoint:
-    #     checkpoint.restore(ckpt_manager.latest_checkpoint).expect_partial()
-    #     print(f"Model restored from {ckpt_manager.latest_checkpoint}")
-    # else:
-    #     print("Initializing model...")
 
     print("Initializing model...")
 
@@ -81,14 +52,19 @@ def interactive_model(
             print('Please supply a text Prompt to the model!')
             raw_text = input("Model prompt >>> ")
 
+        # Interactive example
+        # Increase nsamples to produce more generative examples
         for i in range(nsamples):
             text_output = gpt.submit_text_query(
                 context = raw_text,
                 length = length,
-                batch_size = None,
+                batch_size = batch_size,
+                temperature=temperature,
+                top_k = top_k,
+                top_p = top_p,
                 models_dir = models_dir,
                 model_name = model_name,
-                seed=seed )
+                seed = seed )
             
             print("=" * 40 + f" COMPLETION {i} " + "=" * 40)
             for _, text in enumerate(text_output):
