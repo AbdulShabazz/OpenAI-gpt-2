@@ -1,23 +1,12 @@
 import subprocess
 import os
 import sys
+from modules_to_import import modules_to_import
 
 def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package]) # python -m pip install [[package]|[-r requirements.txt]]
 
 print('Installing missing packages...')
-
-modules_to_import = [
-    ('fire', 'fire'),
-    ('regex', 're'),
-    ('aiohttp', 'aiohttp'),
-    ('aiofiles', 'aiofiles'),
-    ('asyncio', 'asyncio'),
-    ('requests', 'requests'),
-    ('tqdm', 'tqdm', 'from tqdm import tqdm'),
-    ('tensorflow', 'tf'),
-    ('torch', 'pytorch')
-]
 
 for module in modules_to_import:
     try:
