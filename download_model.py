@@ -1,16 +1,6 @@
 import os
 import sys
-
-modules_to_import = [
-    ('fire', 'fire'),
-    ('regex', 're'),
-    ('aiohttp', 'aiohttp'),
-    ('aiofiles', 'aiofiles'),
-    ('asyncio', 'asyncio'),
-    ('torch', 'pytorch'),
-    ('requests', 'requests'),
-    ('tqdm', 'tqdm', 'from tqdm import tqdm')
-]
+from modules_to_import import modules_to_import
 
 for module in modules_to_import:
     try:
