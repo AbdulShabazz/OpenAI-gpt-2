@@ -29,6 +29,6 @@ for module in modules_to_import:
         #install("torchvision") # pip install torchvision 
         #install("torchaudio") # pip install torchaudio
         if module[0] == "torch":
-            print("\033[33m***POST INSTALL NOTICE***: The [torch] module requires additional DLLs you must install. They can collectively be downloaded in Powershell with the command: curl -o vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe\033[0m]")
+            print("\033[33mWARNING: The [torch] module also requires additional DLLs to be installed, which can collectively be downloaded in Powershell (Windows) with the command: curl -o vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe\033[0m]")
 
 print("\nDownloads Complete!")
