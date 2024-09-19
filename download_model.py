@@ -12,7 +12,22 @@ for module in modules_to_import:
         print(f"Error [{module[0]}] module not installed. Please run download_model_prereqs.py to install [{module[0]}]")
         sys.exit(1)
 
-model = sys.argv[1]
+model = ""
+if len(sys.argv) < 2:
+    available_models = ("117M", "124M", "355M", "774M", "1.5B")
+    while True:
+        model = input("Please specify a GPT-2 model to download (117M, 124M, 355M, 774M, or 1.5B): ").strip()
+        if model in available_models:
+            break
+        else:
+            print(f"Error: Invalid model. Please choose from {', '.join(available_models)}", file=sys.stderr)
+
+    subdir = os.path.join('models', model)
+    if not os.path.exists(subdir):
+        os.makedirs(subdir)
+    subdir = subdir.replace('\\','/') # needed for Windows
+else:
+    model = sys.argv[1]
 
 subdir = os.path.join('models', model)
 if not os.path.exists(subdir):
