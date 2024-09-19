@@ -15,6 +15,7 @@ modules_to_import = [
     ('asyncio', 'asyncio'),
     ('requests', 'requests'),
     ('tqdm', 'tqdm', 'from tqdm import tqdm'),
+    ('tensorflow', 'tf'),
     ('torch', 'pytorch')
 ]
 
