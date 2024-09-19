@@ -13,9 +13,9 @@ modules_to_import = [
     ('aiohttp', 'aiohttp'),
     ('aiofiles', 'aiofiles'),
     ('asyncio', 'asyncio'),
-    ('torch', 'pytorch'),
     ('requests', 'requests'),
-    ('tqdm', 'tqdm', 'from tqdm import tqdm')
+    ('tqdm', 'tqdm', 'from tqdm import tqdm'),
+    ('torch', 'pytorch')
 ]
 
 for module in modules_to_import:
@@ -29,6 +29,6 @@ for module in modules_to_import:
         #install("torchvision") # pip install torchvision 
         #install("torchaudio") # pip install torchaudio
         if module[0] == "torch":
-            print('***INFO***: the [torch] module also requires some additional DLLs which can be downloaded with Powershell: curl -o vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe')
+            print("\033[33m***POST INSTALL NOTICE***: The [torch] module requires additional DLLs you must install. They can collectively be downloaded in Powershell with the command: curl -o vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe\033[0m]")
 
 print("\nDownloads Complete!")
