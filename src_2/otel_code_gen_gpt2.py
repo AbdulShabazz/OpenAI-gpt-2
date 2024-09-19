@@ -1,10 +1,12 @@
-from transformers import GPT2LMHeadModel, GPT2Tokenizer, Trainer, TrainingArguments
-from datasets import load_dataset
+import transformers # GPT2LMHeadModel, GPT2Tokenizer, Trainer, TrainingArguments
+import datasets # load_dataset
 
-# Load the GPT-2 model and tokenizer
+
 model_name = "gpt2" # You can choose from 'gpt2', 'gpt2-medium', 'gpt2-large', etc.
-model = GPT2LMHeadModel.from_pretrained(model_name)
-tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+model = transformers.GPT2LMHeadModel.from_pretrained(model_name)
+tokenizer = transformers.GPT2Tokenizer.from_pretrained(model_name)
+
+optional_custom_training = """
 
 # Adjust the tokenizer for code (optional step)
 # Adding a special [PAD] token if not already included
@@ -60,7 +62,7 @@ model = GPT2LMHeadModel.from_pretrained("./gpt2-java-instrumentation")
 tokenizer = GPT2Tokenizer.from_pretrained("./gpt2-java-instrumentation")
 
 # Example non-instrumented Java code
-prompt = """
+prompt = ""
 instrument with opentelemetry:
 
 public class ExampleService {
@@ -68,11 +70,22 @@ public class ExampleService {
         System.out.println("Processing data...");
     }
 }
+""
 """
+
+# Example prompt string
+prompt = """
+Once upon a time long ago, 
+"""
+
+prompt_length_in_tokens = len(prompt) * 2
+
+max_length = prompt_length_in_tokens if prompt_length_in_tokens < 1024 else 1024
 
 # Generate instrumented code suggestion
 inputs = tokenizer(prompt, return_tensors="pt")
-outputs = model.generate(inputs['input_ids'], max_length=256, num_return_sequences=1)
+
+outputs = model.generate(inputs['input_ids'], max_length=max_length, num_return_sequences=1)  # max_length=1024
 
 # Decode and print the generated code
 print(tokenizer.decode(outputs[0], skip_special_tokens=True))
